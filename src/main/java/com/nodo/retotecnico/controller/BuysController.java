@@ -15,7 +15,7 @@ public class BuysController {
     }
 
     @GetMapping ("/{id}")
-    public Buy getBuysById(@PathVariable long id) {
+    public Buy getBuysById(@PathVariable Integer id) {
         return buysService.getBuyById(id);
     }
 }
