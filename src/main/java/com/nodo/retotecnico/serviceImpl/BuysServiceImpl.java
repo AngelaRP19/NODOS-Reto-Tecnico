@@ -24,6 +24,13 @@ public class BuysServiceImpl implements BuysService{
     public Buy getBuyById(Integer id){
         return buysRepository.findById(id).orElse(null);
     }
+    @Override
+    public Integer createBuy(Buy buy) {
+        if(buysRepository.findById(buy.getId()).isPresent()){
+            throw new IllegalArgumentException("Buy with id " + buy.getId() + " already exists.");
+        }
+        return buysRepository.save(buy).getId();
+    }
 
 }
 

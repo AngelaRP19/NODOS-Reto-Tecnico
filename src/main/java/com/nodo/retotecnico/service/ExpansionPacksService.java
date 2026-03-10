@@ -8,4 +8,5 @@ public interface ExpansionPacksService {
 
     List<ExpansionPack> getAllExpansionPacks();
     ExpansionPack getExpansionPacksById(Integer id);
+    Integer createExpansionPack(ExpansionPack expansionPack);
 }
