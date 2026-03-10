@@ -6,3 +6,7 @@ import org.springframework.stereotype.Repository;
 public interface  ExpansionPacksRepository {
     
 }
+
+public interface ExpansionPacksRepository extends JpaRepository<ExpansionPacks, Long>{
+
+}

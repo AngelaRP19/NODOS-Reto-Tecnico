@@ -6,3 +6,7 @@ import org.springframework.stereotype.Repository;
 public interface  ContentsRepository {
     
 }
+
+public interface ContentsRepository extends JpaRepository<Contents, long>{
+
+}

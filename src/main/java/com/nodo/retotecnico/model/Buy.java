@@ -35,3 +35,25 @@ public class Buy {
     private String paymentMethod;
     private String status;
 }
+ //Metodo get
+  public class Buy {
+    private Integer id;
+    private String productName;
+    private double price;
+
+
+
+    //Constructor
+
+     public long getId() {
+         return id;
+     }
+
+     public String getProductName() {
+             return productName;
+     }
+
+     public double getPrice() {
+         return price;
+     }
+ }

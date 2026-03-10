@@ -31,3 +31,26 @@ public class ExpansionPack {
     @OneToMany(mappedBy = "expansionPack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Buy> buys;
 }
+
+//Metodo get
+public class ExpansionPacks {
+    private Integer id;
+    private String productName;
+    private double price;
+
+
+
+    //Constructor
+
+    public long getId() {
+        return id;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}

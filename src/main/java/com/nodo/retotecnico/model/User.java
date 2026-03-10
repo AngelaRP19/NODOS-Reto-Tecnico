@@ -35,3 +35,26 @@ public class User {
     private List<Buy> buys;
 
 }
+
+//Metodo get
+public class Users {
+    private Integer id;
+    private String productName;
+    private double price;
+
+
+
+    //Constructor
+
+    public long getId() {
+        return id;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}
