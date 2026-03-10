@@ -32,6 +32,7 @@ public class Buy {
     private ExpansionPack expansionPack;
     private Date purchaseDate;
     private double totalPrice;
+
     private String paymentMethod;
     private String status;
 }
