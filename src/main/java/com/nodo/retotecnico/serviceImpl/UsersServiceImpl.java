@@ -1,22 +1,27 @@
 package com.nodo.retotecnico.serviceImpl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-public class UsersService {
-    
-}
+import com.nodo.retotecnico.model.User;
+import com.nodo.retotecnico.repository.UsersRepository;
+import com.nodo.retotecnico.service.UsersService;
 
 @Service
-public class UserServiveImpl implements IUserService{
+public class UsersServiceImpl implements UsersService{
+
+    @Autowired
+    private UsersRepository UserRepository;
 
     @Override
-    public list<User> getAllUser() {
+    public List<User> getAllUsers() {
         return UserRepository.findAll();
     }
 
     @Override
-    public User getUserById(Integer id){
+    public User getUsersById(Integer id){
         return UserRepository.findById(id).orElse(null);
     }
 

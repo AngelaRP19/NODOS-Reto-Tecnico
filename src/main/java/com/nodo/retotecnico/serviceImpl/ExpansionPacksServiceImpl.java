@@ -1,26 +1,29 @@
 package com.nodo.retotecnico.serviceImpl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-public class ExpansionPacksService {
-    
-}
+import com.nodo.retotecnico.model.ExpansionPack;
+import com.nodo.retotecnico.repository.ExpansionPacksRepository;
+import com.nodo.retotecnico.service.ExpansionPacksService;
+
 
 @Service
-public class ExpansionPackServiveImpl implements IExpansionPackService{
+public class ExpansionPacksServiceImpl implements ExpansionPacksService{
 
+    @Autowired
+    private ExpansionPacksRepository expansionPacksRepository;
 
     @Override
-    public list<ExpansionPack> getAllExpansionPack() {
-
-        return ExpansionPackRepository.findAll();
+    public List<ExpansionPack> getAllExpansionPacks() {
+        return expansionPacksRepository.findAll();
     }
 
     @Override
-    public ExpansionPack getExpansionPackById(Integer id){
-
-        return ExpansionPackRepository.findById(id).orElse(null);
+    public ExpansionPack getExpansionPacksById(Integer id) {
+        return expansionPacksRepository.findById(id).orElse(null);
     }
 }
 

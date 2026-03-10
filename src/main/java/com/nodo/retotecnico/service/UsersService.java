@@ -1,7 +1,11 @@
 package com.nodo.retotecnico.service;
 
-public interface  IUsersService {
+import java.util.List;
 
-    List<Users> getAllUsers();
-    Users getUsersById(Integer id);
+import com.nodo.retotecnico.model.User;
+
+public interface  UsersService {
+
+    List<User> getAllUsers();
+    User getUsersById(Integer id);
 }

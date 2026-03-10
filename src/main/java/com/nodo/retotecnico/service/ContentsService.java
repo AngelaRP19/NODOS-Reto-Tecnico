@@ -1,8 +1,11 @@
 package com.nodo.retotecnico.service;
 
+import java.util.List;
 
-public interface IContentsService {
+import com.nodo.retotecnico.model.Content;
 
-    List<Contents> getAllContents();
-    Contents getContentsById(Integer id);
+public interface ContentsService {
+
+    List<Content> getAllContents();
+    Content getContentsById(Integer id);
 }

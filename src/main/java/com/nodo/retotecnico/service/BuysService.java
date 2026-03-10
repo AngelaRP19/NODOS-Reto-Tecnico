@@ -1,10 +1,10 @@
 package com.nodo.retotecnico.service;
 
-public interface IBuysService {
-    
-}
+import java.util.List;
 
-public interface BuyService{
+import com.nodo.retotecnico.model.Buy;
+
+public interface BuysService{
     List<Buy> getAllBuys();
     Buy getBuyById(Integer id);
 

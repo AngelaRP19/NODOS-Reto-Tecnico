@@ -1,7 +1,11 @@
 package com.nodo.retotecnico.service;
 
-public interface IExpansionPacksService {
+import java.util.List;
 
-    List<ExpansionPacks> getAllExpansionPacks();
-    ExpansionPacks getExpansionPacksById(Integer id);
+import com.nodo.retotecnico.model.ExpansionPack;
+
+public interface ExpansionPacksService {
+
+    List<ExpansionPack> getAllExpansionPacks();
+    ExpansionPack getExpansionPacksById(Integer id);
 }
