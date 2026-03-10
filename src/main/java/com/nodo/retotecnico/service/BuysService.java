@@ -6,6 +6,6 @@ public interface IBuysService {
 
 public interface BuyService{
     List<Buy> getAllBuys();
-    Buy getBuyById(Long id);
+    Buy getBuyById(Integer id);
 
 }

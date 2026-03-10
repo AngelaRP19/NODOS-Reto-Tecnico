@@ -3,10 +3,6 @@ package com.nodo.retotecnico.repository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface  BuysRepository {
+public interface  BuysRepository extends JpaRepository<Buy Integer>{
     
 }
-
-  public interface BuyRepository extends JpaRepository<Buy, Long>{
-
-  }

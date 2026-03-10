@@ -22,24 +22,3 @@ public class Content {
     private String image;
 
 }
-//Metodo get
-
-public class Content {
-    private Integer id;
-    private String productName;
-    private double price;
-}
-
-//Constructores
-
-public long getId() {
-    return id;
-}
-
-public String getProductName() {
-    return ProductName;
-}
-
-public double getPrice() {
-    return price;
-}
