@@ -16,7 +16,7 @@ public class ContentsController {
     }
 
     @GetMapping ("/{id}")
-    public Contents getContentsById(@PathVariable long id) {
+    public Contents getContentsById(@PathVariable Integer id) {
         return ContentsService.getContentsById(id);
     }
 }
