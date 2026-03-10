@@ -16,7 +16,7 @@ public class ExpansionPacksController {
     }
 
     @GetMapping ("/{id}")
-    public ExpansionPacks getExpansionPacksById(@PathVariable long id) {
+    public ExpansionPacks getExpansionPacksById(@PathVariable Integer id) {
         return ExpansionPacksService.getExpansionPacksById(id);
     }
 }
