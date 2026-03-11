@@ -24,6 +24,14 @@ public class UsersServiceImpl implements UsersService{
     public User getUsersById(Integer id){
         return UserRepository.findById(id).orElse(null);
     }
+    
+    @Override
+    public Integer createUser(User user) {
+        if(UserRepository.findById(user.getId()).isPresent()){
+            throw new IllegalArgumentException("User with id " + user.getId() + " already exists.");
+        }
+        return UserRepository.save(user).getId();
+    }
 
 }
 

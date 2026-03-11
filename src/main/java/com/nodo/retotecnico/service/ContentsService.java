@@ -8,4 +8,5 @@ public interface ContentsService {
 
     List<Content> getAllContents();
     Content getContentsById(Integer id);
+    Integer createContent(Content content);
 }
