@@ -33,4 +33,7 @@ public class UsersController {
     public Integer createUser(@RequestBody User user) {
         return UsersService.createUser(user);
     }
+
+    @GetMapping
+    public String welcome() {return "Welcome Spring Security";}
 }
