@@ -4,6 +4,8 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -13,13 +15,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "expansion_packs", schema = "---")
+@Table(name = "expansion_packs")
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpansionPack {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    
     private String name;
     private String description;
     private String distributor;
