@@ -20,6 +20,11 @@ public class BuysController {
     @Autowired
     private BuysService buysService;
 
+    @GetMapping("/")
+    public String hello() {
+        return "Bienvenido a las compras";
+    }
+
     @GetMapping
     public List<Buy> getAllBuys() {
         return buysService.getAllBuys();
