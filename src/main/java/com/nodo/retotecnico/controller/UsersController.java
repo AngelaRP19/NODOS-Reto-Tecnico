@@ -33,4 +33,9 @@ public class UsersController {
     public Integer createUser(@RequestBody User user) {
         return UsersService.createUser(user);
     }
+    @GetMapping
+    public String getUser(){
+        return "Usuarios protegidos con JWT";
+    }
+
 }
