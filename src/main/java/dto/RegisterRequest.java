@@ -1,21 +1,33 @@
 package dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
+    public RegisterRequest() {}
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
+    @NotBlank(message = "El nombre de usuario es obligatorio")
     private String username;
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     private String password;
-    String firstName;
-    String lastName;
-    String country;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    private String firstName;
+
+    @NotBlank(message = "El apellido es obligatorio")
+    private String lastName;
+
+    @NotBlank(message = "El país es obligatorio")
+    private String country;
 
     public String getUsername() {
         return username;

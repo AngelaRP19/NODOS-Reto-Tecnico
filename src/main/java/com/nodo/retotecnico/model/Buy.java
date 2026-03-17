@@ -9,15 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+// removed lombok
 
-@Data
 @Entity
 @Table(name = "buys")
-@AllArgsConstructor
-@NoArgsConstructor
 public class Buy {
     
     @Id
@@ -36,4 +31,18 @@ public class Buy {
     private double totalPrice;
     private String paymentMethod;
     private String status;
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public ExpansionPack getExpansionPack() { return expansionPack; }
+    public void setExpansionPack(ExpansionPack expansionPack) { this.expansionPack = expansionPack; }
+    public Date getPurchaseDate() { return purchaseDate; }
+    public void setPurchaseDate(Date purchaseDate) { this.purchaseDate = purchaseDate; }
+    public double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
