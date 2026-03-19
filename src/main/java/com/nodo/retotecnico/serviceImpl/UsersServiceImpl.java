@@ -1,16 +1,16 @@
 package com.nodo.retotecnico.serviceImpl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UsersRepository;
 import com.nodo.retotecnico.service.UsersService;
-import dto.RegisterRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Date;
 
 @Service
 public class UsersServiceImpl implements UsersService{
@@ -54,9 +54,7 @@ public class UsersServiceImpl implements UsersService{
         newUser.setCountry(request.getCountry());
         newUser.setRole("ROLE_USER");
         newUser.setRegistrationDate(new Date());
-
-        // Default or missing User fields mapping
-        newUser.setEmail(request.getUsername() + "@example.com"); // Temp email mapping if not provided
+        newUser.setEmail(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com");
 
         return UserRepository.save(newUser).getId();
     }

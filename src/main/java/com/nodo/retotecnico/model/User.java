@@ -5,12 +5,19 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 // removed lombok
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
@@ -54,29 +61,8 @@ public class User implements UserDetails {
     public boolean isEnabled(){
         return true;
     }
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public Date getRegistrationDate() { return registrationDate; }
-    public void setRegistrationDate(Date registrationDate) { this.registrationDate = registrationDate; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getNickname() { return nickname; }
-    public void setNickname(String nickname) { this.nickname = nickname; }
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    @Override
     public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    @Override
     public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    public List<Buy> getBuys() { return buys; }
-    public void setBuys(List<Buy> buys) { this.buys = buys; }
 }
