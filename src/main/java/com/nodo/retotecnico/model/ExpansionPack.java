@@ -13,11 +13,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
 @Entity
 @Table(name = "expansion_packs")
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ExpansionPack {
     
     @Id

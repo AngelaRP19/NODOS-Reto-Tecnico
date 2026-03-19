@@ -36,4 +36,5 @@ public class Buy {
     private double totalPrice;
     private String paymentMethod;
     private String status;
+    
 }

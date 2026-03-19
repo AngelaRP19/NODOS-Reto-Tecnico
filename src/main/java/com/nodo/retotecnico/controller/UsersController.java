@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.service.UsersService;
 
@@ -30,7 +32,9 @@ public class UsersController {
         return UsersService.getUsersById(id);
     }
     @PostMapping("/create")
-    public Integer createUser(@RequestBody User user) {
+    public Integer createUser(@Valid @RequestBody User user) {
         return UsersService.createUser(user);
     }
+
+
 }
