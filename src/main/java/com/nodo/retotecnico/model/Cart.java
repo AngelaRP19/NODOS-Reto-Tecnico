@@ -17,8 +17,8 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Relación con usuario
-    @OneToOne
+    // 🔥 CAMBIO AQUÍ
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
