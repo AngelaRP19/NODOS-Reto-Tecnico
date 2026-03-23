@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.model.Platforms;
 import com.nodo.retotecnico.repository.PlatformsRepository;
-import com.nodo.retotecnico.service.PlatformService;
+import com.nodo.retotecnico.service.PlatformsService;
 
 @Service
-public class PlatformServiceImpl implements PlatformService {
+public class PlatformsServiceImpl implements PlatformsService {
 
     @Autowired
     private PlatformsRepository platformsRepository;

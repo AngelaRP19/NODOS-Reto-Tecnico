@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nodo.retotecnico.model.Platforms;
-import com.nodo.retotecnico.service.PlatformService;
+import com.nodo.retotecnico.service.PlatformsService;
 
 @RestController
 @RequestMapping("/nodos/platform")
 public class PlatformController {
 
     @Autowired
-    private PlatformService platformService;
+    private PlatformsService platformsService;
 
     @GetMapping("/")
     public String hello() {
@@ -27,15 +27,15 @@ public class PlatformController {
 
     @GetMapping
     public List<Platforms> getAllPlatforms() {
-        return platformService.getAllPlatform();
+        return platformsService.getAllPlatform();
     }
 
     @GetMapping ("/{id}")
     public Platforms getPlatformById(@PathVariable Integer id) {
-        return platformService.getPlatformById(id);
+        return platformsService.getPlatformById(id);
     }
     @PostMapping("/create")
     public Integer createPlatform(@RequestBody Platforms platforms) {
-        return platformService.createPlatform(platforms);
+        return platformsService.createPlatform(platforms);
     }
 }

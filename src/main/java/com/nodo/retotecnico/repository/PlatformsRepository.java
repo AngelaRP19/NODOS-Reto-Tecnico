@@ -9,8 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface PlatformsRepository extends JpaRepository<Platforms, Integer> {
-
-    // Buscar una plataforma por su nombre
     Optional<Platforms> findByName(String name);
 
 }
