@@ -32,5 +32,21 @@ public class ContentsServiceImpl implements ContentsService{
         }
         return contentsRepository.save(content).getId();
     }
+
+    @Override
+    public Content updateContent(Integer id, Content content){
+        Content existingContent = contentsRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Content not found"));
+        existingContent.setTitle(content.getTitle());
+        existingContent.setDescription(content.getDescription());
+        return contentsRepository.save(existingContent);
+    }
+    @Override
+    public void deleteContent(Integer id){
+        if (contentsRepository.existsById(id)){
+            throw new RuntimeException("Content not found");
+        }
+        contentsRepository.deleteById(id);
+    }
 }
 

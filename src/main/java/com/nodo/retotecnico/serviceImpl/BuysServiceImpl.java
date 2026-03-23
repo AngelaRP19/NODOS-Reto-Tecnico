@@ -24,6 +24,12 @@ public class BuysServiceImpl implements BuysService{
     public Buy getBuyById(Integer id){
         return buysRepository.findById(id).orElse(null);
     }
+    
+    @Override
+    public List<Buy> getBuysByUser(Integer userId) {
+        return buysRepository.findByCartUserId(userId);
+    }
+    
     @Override
     public Integer createBuy(Buy buy) {
         if(buysRepository.findById(buy.getId()).isPresent()){
@@ -32,6 +38,24 @@ public class BuysServiceImpl implements BuysService{
         return buysRepository.save(buy).getId();
     }
 
+    @Override
+    public Buy updateBuy(Integer id, Buy buy){
+        Buy existingBuy = buysRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Buy not found"));
+        existingBuy.setCart(buy.getCart());
+        existingBuy.setPurchaseDate(buy.getPurchaseDate());
+        existingBuy.setTotalPrice(buy.getTotalPrice());
+        existingBuy.setPaymentMethod(buy.getPaymentMethod());
+        existingBuy.setStatus(buy.getStatus());
+        return buysRepository.save(existingBuy);
+    }
+
+    @Override
+    public void deleteBuy(Integer id){
+        Buy existingBuy = buysRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Buy not found"));
+        buysRepository.deleteById(id);
+    }
 }
 
 

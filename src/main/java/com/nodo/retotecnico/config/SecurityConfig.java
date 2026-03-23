@@ -20,7 +20,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Endpoints públicos de autenticación
                 .requestMatchers("/auth/**", "/oauth2/**", "/login**", "/error**").permitAll()
+                // GET públicos - lectura de catálogos
+                .requestMatchers("GET", "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").permitAll()
+                // Cart y Buys requieren autenticación
+                .requestMatchers("/nodos/cart/**", "/nodos/buys/**").authenticated()
+                // Resto de operaciones requieren autenticación
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

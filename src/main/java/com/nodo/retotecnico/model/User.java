@@ -37,18 +37,12 @@ public class User implements UserDetails {
     private String nickname;
     private String country;
     private String username;
-    private String password; // debe estar encriptada
+    private String password;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Buy> buys;
-
-  
-    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Cart> carts;
 
  
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role));
