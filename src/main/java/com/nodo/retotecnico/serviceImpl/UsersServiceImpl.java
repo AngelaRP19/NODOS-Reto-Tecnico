@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.model.User;
-import com.nodo.retotecnico.repository.UsersRepository;
+import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.UsersService;
 
 @Service
 public class UsersServiceImpl implements UsersService{
 
     @Autowired
-    private UsersRepository UserRepository;
+    private UserRepository UserRepository;
 
     @Autowired
     private com.nodo.retotecnico.repository.UserRepository specificUserRepository;
