@@ -8,13 +8,15 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "platforms")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Platforms {
+public class Platform {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +24,8 @@ public class Platforms {
 
     private String name;  // Ej. Xbox, PlayStation®
     private String url;   // URL de la tienda
+
+    @OneToMany(mappedBy = "platform")
+    private List<CartDetails> cartDetails;
+    
 }

@@ -23,7 +23,9 @@ public class CartServiceImpl implements CartService {
         return cartRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId).orElseThrow();
-                    Cart newCart = new Cart(user);
+                    Cart newCart = new Cart();
+                    newCart.setUser(user);
+                    newCart.setStatus("activo");
                     return cartRepository.save(newCart);
                 });
     }

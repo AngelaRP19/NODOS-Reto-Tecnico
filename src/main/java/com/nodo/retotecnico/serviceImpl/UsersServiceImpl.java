@@ -59,6 +59,23 @@ public class UsersServiceImpl implements UsersService{
         return UserRepository.save(newUser).getId();
     }
 
+     @Override
+    public User updateUser(Integer id, User user){
+        User existingUser = UserRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("User no found"));
+
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+
+        return UserRepository.save(existingUser);
+    }
+    @Override
+    public void deleteUser(Integer id){
+        if (UserRepository.existsById(id)){
+            throw new RuntimeException("User no found");
+        }
+        UserRepository.deleteById(id);
+    }
 }
 
 

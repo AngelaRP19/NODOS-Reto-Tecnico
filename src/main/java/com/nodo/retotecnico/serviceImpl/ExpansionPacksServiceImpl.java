@@ -32,5 +32,20 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
         }
         return expansionPacksRepository.save(expansionPack).getId();
     }
+    @Override
+    public ExpansionPack updateExpansionPack(Integer id, ExpansionPack expansionPack){
+        ExpansionPack existingExpansionPack = expansionPacksRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ExpansionPack not found"));
+        existingExpansionPack.setName(expansionPack.getName());
+        existingExpansionPack.setDescription(expansionPack.getDescription());
+        return expansionPacksRepository.save(existingExpansionPack);
+    }
+
+    @Override
+    public void deleteExpansionPack(Integer id){
+        ExpansionPack existingExpansionPack = expansionPacksRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ExpansionPack not found"));
+        expansionPacksRepository.deleteById(id);
+    }
 }
 

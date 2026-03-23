@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,19 +23,14 @@ public class Buy {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "expansion_pack_id", nullable = false)
-    private ExpansionPack expansionPack;
-    
+    private Integer id;    
     private Date purchaseDate;
     private double totalPrice;
     private String paymentMethod;
     private String status;
+
+    @OneToOne
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
     
 }

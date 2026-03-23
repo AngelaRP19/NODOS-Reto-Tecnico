@@ -27,12 +27,8 @@ public class ExpansionPack {
     private String category;
     private String publicationDate;
     private String language;
-
    
-    @OneToMany(mappedBy = "expansionPack", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Buy> buys;
 
-    @JsonIgnore
-    @ManyToMany(mappedBy = "expansions")
-    private List<Cart> carts;
+    @OneToMany(mappedBy = "expansionPack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartDetails> cartDetails;
 }
