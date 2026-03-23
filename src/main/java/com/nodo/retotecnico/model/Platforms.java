@@ -1,15 +1,19 @@
 package com.nodo.retotecnico.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
-
+@Data
 @Entity
 @Table(name = "platforms")
-
+@AllArgsConstructor
 @NoArgsConstructor
 public class Platforms {
 
@@ -19,8 +23,4 @@ public class Platforms {
 
     private String name;  // Ej. Xbox, PlayStation®
     private String url;   // URL de la tienda
-
-    @OneToMany(mappedBy = "platform", cascade = CascadeType.ALL)
-    private List<Product> products;
 }
-
