@@ -1,6 +1,5 @@
 package com.nodo.retotecnico.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,18 +11,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "contents")
+@Table(name = "platforms")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Content {
-    
+public class Platforms {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String section;
-    private String title;
-    @Column(columnDefinition = "TEXT")
-    private String description;
-    private String image;
 
+    private String name;  // Ej. Xbox, PlayStation®
+    private String url;   // URL de la tienda
 }
