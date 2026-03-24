@@ -6,7 +6,7 @@ public interface CartService {
 
     Cart getCartByUser(Integer userId);
 
-    Cart addToCart(Integer userId, Integer expansionId);
+    Cart addToCart(Integer userId, Integer expansionId, Integer platformId);
 
     Cart removeFromCart(Integer userId, Integer expansionId);
 
