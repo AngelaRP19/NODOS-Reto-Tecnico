@@ -27,9 +27,6 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
     }
     @Override
     public Integer createExpansionPack(ExpansionPack expansionPack) {
-        if(expansionPacksRepository.findById(expansionPack.getId()).isPresent()){
-            throw new IllegalArgumentException("Expansion Pack with id " + expansionPack.getId() + " already exists.");
-        }
         return expansionPacksRepository.save(expansionPack).getId();
     }
     @Override

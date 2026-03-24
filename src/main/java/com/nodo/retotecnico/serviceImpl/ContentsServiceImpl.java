@@ -27,9 +27,6 @@ public class ContentsServiceImpl implements ContentsService{
 
     @Override
     public Integer createContent(Content content) {
-        if(contentsRepository.findById(content.getId()).isPresent()){
-            throw new IllegalArgumentException("Content with id " + content.getId() + " already exists.");
-        }
         return contentsRepository.save(content).getId();
     }
 
