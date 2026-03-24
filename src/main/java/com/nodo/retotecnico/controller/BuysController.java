@@ -31,6 +31,39 @@ public class BuysController {
     @Autowired
     private UserRepository userRepository;
 
+
+    private void validateUserOwnsBuy(Integer buyId, OAuth2User oauth2User) {
+        if (oauth2User == null) {
+            throw new AccessDeniedException("Usuario no autenticado");
+        }
+        
+        Buy buy = buysService.getBuyById(buyId);
+        if (buy == null) {
+            throw new RuntimeException("Compra no encontrada");
+        }
+        
+        // Obtener email/username del usuario autenticado
+        String userEmail = oauth2User.getAttribute("email");
+        if (userEmail == null) {
+            userEmail = oauth2User.getAttribute("name");
+        }
+        
+        // Buscar usuario en la base de datos
+        User currentUser = userRepository.findByEmail(userEmail);
+        if (currentUser == null) {
+            currentUser = userRepository.findByUsernameIgnoreCase(userEmail);
+        }
+        
+        if (currentUser == null) {
+            throw new AccessDeniedException("Usuario no encontrado");
+        }
+        
+        // Validar que la compra pertenece al usuario autenticado
+        if (!buy.getCart().getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("No tienes permiso para acceder a esta compra");
+        }
+    }
+
     @GetMapping("/")
     public String hello() {
         return "Bienvenido a las compras";
@@ -58,11 +91,7 @@ public class BuysController {
     }
 
     /**
-     * Obtiene una compra específica del usuario autenticado
-     * Valida que el usuario solo pueda ver sus propias compras
-     * @param id ID de la compra
-     * @param oauth2User Usuario autenticado
-     * @return La compra solicitada
+     * Obtiene una compra específica del usuario
      */
     @GetMapping("/{id}")
     public Buy getBuyById(
@@ -108,12 +137,19 @@ public class BuysController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Buy> updateBuy(@PathVariable Integer id, @RequestBody Buy buy){
+    public ResponseEntity<Buy> updateBuy(
+            @PathVariable Integer id,
+            @RequestBody Buy buy,
+            @AuthenticationPrincipal OAuth2User oauth2User) {
+        validateUserOwnsBuy(id, oauth2User);
         return ResponseEntity.ok(buysService.updateBuy(id, buy));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBuy(@PathVariable Integer id){
+    public ResponseEntity<String> deleteBuy(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal OAuth2User oauth2User) {
+        validateUserOwnsBuy(id, oauth2User);
         buysService.deleteBuy(id);
         return ResponseEntity.ok("Buy deleted successfully");
     }

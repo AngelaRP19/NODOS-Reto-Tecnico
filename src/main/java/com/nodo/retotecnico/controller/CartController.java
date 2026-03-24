@@ -21,10 +21,7 @@ public class CartController {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * Validates that the authenticated user owns the cart being accessed.
-     * Throws AccessDeniedException if the user is not authorized.
-     */
+    
     private void validateUserOwnsCart(Integer cartUserId, OAuth2User principal) {
         if (principal == null) {
             throw new AccessDeniedException("User must be authenticated");
