@@ -3,9 +3,12 @@ package com.nodo.retotecnico.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,5 +39,15 @@ public class ContentsController {
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Content> updateContent(@PathVariable Integer id, @RequestBody Content content){
+        return ResponseEntity.ok(contentsService.updateContent(id, content));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteContent(@PathVariable Integer id){
+        contentsService.deleteContent(id);
+        return ResponseEntity.ok("Content deleted successfully");
     }
 }   

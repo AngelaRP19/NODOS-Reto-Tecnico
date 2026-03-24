@@ -1,36 +1,31 @@
 package com.nodo.retotecnico.model;
 
-import java.util.Date;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "buys")
+@Table(name = "platforms")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Buy {
-    
+public class Platform {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;    
-    private Date purchaseDate;
-    private double totalPrice;
-    private String paymentMethod;
-    private String status;
+    private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    private String name;  // Ej. Xbox, PlayStation®
+    private String url;   // URL de la tienda
+
+    @OneToMany(mappedBy = "platform")
+    private List<CartDetails> cartDetails;
     
 }

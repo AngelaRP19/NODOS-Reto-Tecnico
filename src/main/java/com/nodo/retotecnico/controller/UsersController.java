@@ -3,12 +3,17 @@ package com.nodo.retotecnico.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.service.UsersService;
@@ -18,19 +23,31 @@ import com.nodo.retotecnico.service.UsersService;
 public class UsersController {
 
     @Autowired
-    private UsersService UsersService;
+    private UsersService usersService;
 
     @GetMapping
     public List<User> getAllUsers() {
-        return UsersService.getAllUsers();
+        return usersService.getAllUsers();
     }
 
     @GetMapping ("/{id}")
     public User getUsersById(@PathVariable Integer id) {
-        return UsersService.getUsersById(id);
+        return usersService.getUsersById(id);
     }
     @PostMapping("/create")
-    public Integer createUser(@RequestBody User user) {
-        return UsersService.createUser(user);
+    public Integer createUser(@Valid @RequestBody User user) {
+        return usersService.createUser(user);
     }
+
+     @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user){
+        return ResponseEntity.ok(usersService.updateUser(id, user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Integer id){
+        usersService.deleteUser(id);
+        return ResponseEntity.ok("User deleted successfully");
+    }
+
 }

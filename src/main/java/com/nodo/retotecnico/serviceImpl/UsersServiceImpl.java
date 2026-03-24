@@ -1,19 +1,28 @@
 package com.nodo.retotecnico.serviceImpl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.model.User;
-import com.nodo.retotecnico.repository.UsersRepository;
+import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.UsersService;
 
 @Service
 public class UsersServiceImpl implements UsersService{
 
     @Autowired
-    private UsersRepository UserRepository;
+    private UserRepository UserRepository;
+
+    @Autowired
+    private com.nodo.retotecnico.repository.UserRepository specificUserRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<User> getAllUsers() {
@@ -27,12 +36,46 @@ public class UsersServiceImpl implements UsersService{
     
     @Override
     public Integer createUser(User user) {
-        if(UserRepository.findById(user.getId()).isPresent()){
-            throw new IllegalArgumentException("User with id " + user.getId() + " already exists.");
-        }
+        // Fallback for creating user directly if needed
         return UserRepository.save(user).getId();
     }
 
+    public Integer registerUser(RegisterRequest request) {
+        if (specificUserRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists.");
+        }
+
+        User newUser = new User();
+        newUser.setUsername(request.getUsername());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setName(request.getFirstName() + " " + request.getLastName());
+        newUser.setFirstName(request.getFirstName());
+        newUser.setLastName(request.getLastName());
+        newUser.setCountry(request.getCountry());
+        newUser.setRole("ROLE_USER");
+        newUser.setRegistrationDate(new Date());
+        newUser.setEmail(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com");
+
+        return UserRepository.save(newUser).getId();
+    }
+
+     @Override
+    public User updateUser(Integer id, User user){
+        User existingUser = UserRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("User no found"));
+
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+
+        return UserRepository.save(existingUser);
+    }
+    @Override
+    public void deleteUser(Integer id){
+        if (UserRepository.existsById(id)){
+            throw new RuntimeException("User no found");
+        }
+        UserRepository.deleteById(id);
+    }
 }
 
 

@@ -9,4 +9,6 @@ public interface ExpansionPacksService {
     List<ExpansionPack> getAllExpansionPacks();
     ExpansionPack getExpansionPacksById(Integer id);
     Integer createExpansionPack(ExpansionPack expansionPack);
+    ExpansionPack updateExpansionPack(Integer id, ExpansionPack expansionPack);
+    void deleteExpansionPack(Integer id);
 }
