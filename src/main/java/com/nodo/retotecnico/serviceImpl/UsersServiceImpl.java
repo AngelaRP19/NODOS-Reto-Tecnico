@@ -41,10 +41,6 @@ public class UsersServiceImpl implements UsersService{
     }
 
     public Integer registerUser(RegisterRequest request) {
-        if (specificUserRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists.");
-        }
-
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));

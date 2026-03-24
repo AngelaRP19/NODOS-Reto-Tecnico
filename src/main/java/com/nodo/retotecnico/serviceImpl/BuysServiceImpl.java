@@ -32,9 +32,6 @@ public class BuysServiceImpl implements BuysService{
     
     @Override
     public Integer createBuy(Buy buy) {
-        if(buysRepository.findById(buy.getId()).isPresent()){
-            throw new IllegalArgumentException("Buy with id " + buy.getId() + " already exists.");
-        }
         return buysRepository.save(buy).getId();
     }
 
