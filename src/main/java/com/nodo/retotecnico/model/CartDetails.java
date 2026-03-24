@@ -34,7 +34,5 @@ public class CartDetails {
     @ManyToOne
     @JoinColumn(name = "platform_id", nullable = false)
     private Platform platform;
-
-    @jakarta.persistence.Column(nullable = false)
-    private Integer quantity = 1;
+    
 }
