@@ -18,6 +18,9 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private ExpansionPacksRepository expansionRepository;
 
+    @Autowired
+    private PlatformsRepository platformsRepository;
+
     @Override
     public Cart getCartByUser(Integer userId) {
         return cartRepository.findByUserId(userId)
@@ -31,14 +34,17 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public Cart addToCart(Integer userId, Integer expansionId) {
+    public Cart addToCart(Integer userId, Integer expansionId, Integer platformId) {
 
         Cart cart = getCartByUser(userId);
 
         ExpansionPack expansion = expansionRepository.findById(expansionId)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Expansion not found"));
+                
+        Platform platform = platformsRepository.findById(platformId)
+                .orElseThrow(() -> new RuntimeException("Platform not found"));
 
-        cart.addExpansion(expansion);
+        cart.addExpansion(expansion, platform);
 
         return cartRepository.save(cart);
     }
