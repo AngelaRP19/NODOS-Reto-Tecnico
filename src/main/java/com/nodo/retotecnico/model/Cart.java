@@ -45,7 +45,7 @@ public class Cart {
 
     // MÉTODOS
 
-    public void addExpansion(ExpansionPack expansion) {
+    public void addExpansion(ExpansionPack expansion, Platform platform) {
         if (this.details == null) {
             this.details = new ArrayList<>();
         }
@@ -57,6 +57,7 @@ public class Cart {
             CartDetails cartDetail = new CartDetails();
             cartDetail.setCart(this);
             cartDetail.setExpansionPack(expansion);
+            cartDetail.setPlatform(platform);
             this.details.add(cartDetail);
         }
     }
