@@ -34,6 +34,7 @@ public class CartController {
     @Autowired
     private UserRepository userRepository;
 
+    // Obtener usuario autenticado
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         
@@ -63,6 +64,7 @@ public class CartController {
         return user;
     }
 
+    // Convertir entidad Cart a DTO
     private CartResponseDTO convertToDTO(Cart cart) {
         User user = cart.getUser();
         UserDTO userDTO = new UserDTO(
@@ -88,10 +90,16 @@ public class CartController {
                 return new CartItemDTO(detail.getId(), packDTO, platformDTO);
             }).collect(Collectors.toList()) : List.of();
 
-        return new CartResponseDTO(cart.getId(), cart.getStatus(), userDTO, items);
+        return new CartResponseDTO(
+            cart.getId(),
+            cart.getStatus(),
+            userDTO,
+            items,
+            cart.getTotal() // siempre devuelve el total actualizado
+        );
     }
 
-    //Ver carrito
+    // Ver carrito
     @GetMapping
     public CartResponseDTO getCart() {
         User authenticatedUser = getAuthenticatedUser();
@@ -99,7 +107,7 @@ public class CartController {
         return convertToDTO(cart);
     }
 
-    // Agregar a carrito
+    // Agregar producto al carrito
     @PostMapping("/add")
     public CartResponseDTO addToCart(@RequestParam Integer expansionId, @RequestParam Integer platformId) {
         User authenticatedUser = getAuthenticatedUser();
@@ -107,7 +115,7 @@ public class CartController {
         return convertToDTO(cart);
     }
 
-    // Remover del carrito
+    // Remover producto del carrito
     @PostMapping("/remove")
     public CartResponseDTO removeFromCart(@RequestParam Integer expansionId) {
         User authenticatedUser = getAuthenticatedUser();
