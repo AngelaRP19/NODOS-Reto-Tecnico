@@ -2,6 +2,9 @@ package com.nodo.retotecnico.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,11 +31,20 @@ public class AuthController {
     @Autowired
     private UsersServiceImpl usersService;
 
-    @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request){
-        String token = jwtUtil.createToken(request.getUsername());
-        return new AuthResponse(token);
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request){
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+            String token = jwtUtil.createToken(request.getUsername());
+            return ResponseEntity.ok(new AuthResponse(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
     }
 
     @PostMapping("/register")

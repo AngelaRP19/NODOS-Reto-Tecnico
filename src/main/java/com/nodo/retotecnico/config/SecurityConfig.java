@@ -2,6 +2,9 @@ package com.nodo.retotecnico.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +27,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -31,9 +39,14 @@ public class SecurityConfig {
                 // Endpoints públicos de autenticación
                 .requestMatchers("/auth/**", "/oauth2/**", "/login**", "/error**").permitAll()
                 // GET públicos - lectura de catálogos
-                .requestMatchers("GET", "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").permitAll()
-                // Cart y Buys requieren autenticación
-                .requestMatchers("/nodos/cart/**", "/nodos/buys/**",  "/nodos/Users/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").permitAll()
+                // Endpoints protegidos para admins
+                .requestMatchers(HttpMethod.POST, "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/nodos/Contents/**", "/nodos/platform/**", "/nodos/ExpansionPacks/**").hasRole("ADMIN")
+                .requestMatchers("/nodos/Users/**").hasRole("ADMIN") // Por simplicidad, solo admin gestiona usuarios o podrías limitarlo a ellos mismos después
+                // Cart y Buys requieren autenticación (USER o ADMIN)
+                .requestMatchers("/nodos/cart/**", "/nodos/buys/**").authenticated()
                 // Resto de operaciones requieren autenticación
                 .anyRequest().authenticated()
             )

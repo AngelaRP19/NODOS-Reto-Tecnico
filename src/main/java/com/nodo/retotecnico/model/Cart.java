@@ -58,6 +58,7 @@ public class Cart {
             cartDetail.setCart(this);
             cartDetail.setExpansionPack(expansion);
             cartDetail.setPlatform(platform);
+            cartDetail.setQuantity(1); // Set default quantity corresponding to NOT NULL DB constraint
             this.details.add(cartDetail);
         }
         recalculateTotal(); // recalcula al agregar
