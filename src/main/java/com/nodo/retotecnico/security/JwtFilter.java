@@ -35,6 +35,13 @@ public class JwtFilter extends OncePerRequestFilter {
         
         try {
             String token = header.substring(7);
+            
+            if (jwtUtil.isTokenInvalidated(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\": \"Token invalidated\"}");
+                return;
+            }
+            
             String username = jwtUtil.extractUsername(token);
             
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

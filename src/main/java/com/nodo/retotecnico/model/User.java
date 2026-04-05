@@ -46,6 +46,7 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String username;
     private String password;
+    private Boolean deleted = false;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

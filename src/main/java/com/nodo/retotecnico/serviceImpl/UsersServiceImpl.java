@@ -41,6 +41,12 @@ public class UsersServiceImpl implements UsersService{
     }
 
     public Integer registerUser(RegisterRequest request) {
+        if (UserRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("El nombre de usuario ya está en uso.");
+        }
+        if (request.getEmail() != null && UserRepository.findByEmail(request.getEmail()) != null) {
+            throw new RuntimeException("El correo electrónico ya está en uso.");
+        }
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -67,10 +73,18 @@ public class UsersServiceImpl implements UsersService{
     }
     @Override
     public void deleteUser(Integer id){
-        if (UserRepository.existsById(id)){
+        if (!UserRepository.existsById(id)){
             throw new RuntimeException("User no found");
         }
         UserRepository.deleteById(id);
+    }
+
+    @Override
+    public User updateUserRole(Integer id, String role) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(role);
+        return UserRepository.save(user);
     }
 }
 

@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.service.UsersService;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/nodos/Users")
@@ -48,6 +49,11 @@ public class UsersController {
     public ResponseEntity<String> deleteUser(@PathVariable Integer id){
         usersService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> updateUserRole(@PathVariable Integer id, @RequestBody String role){
+        return ResponseEntity.ok(usersService.updateUserRole(id, role));
     }
 
 }

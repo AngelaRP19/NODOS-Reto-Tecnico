@@ -31,17 +31,19 @@ public class Cart {
     private Integer id;
 
     private String status; // "activo", "inactivo", "comprado" 
+    private Boolean deleted = false;
+
+    private Double total = 0.0; // <-- nuevo campo persistente
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartDetails> details;
+    private List<CartDetails> details = new ArrayList<>();
 
     @OneToOne(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Buy buy;
-
 
     // MÉTODOS
 
@@ -49,7 +51,6 @@ public class Cart {
         if (this.details == null) {
             this.details = new ArrayList<>();
         }
-        // Verificar si la expansión ya existe
         boolean exists = this.details.stream()
                 .anyMatch(detail -> detail.getExpansionPack().equals(expansion));
         
@@ -58,27 +59,29 @@ public class Cart {
             cartDetail.setCart(this);
             cartDetail.setExpansionPack(expansion);
             cartDetail.setPlatform(platform);
+            cartDetail.setQuantity(1); // Set default quantity corresponding to NOT NULL DB constraint
             this.details.add(cartDetail);
         }
+        recalculateTotal(); // recalcula al agregar
     }
 
     public void removeExpansion(ExpansionPack expansion) {
         if (this.details != null) {
             this.details.removeIf(detail -> detail.getExpansionPack().equals(expansion));
         }
+        recalculateTotal(); // recalcula al quitar
     }
 
     public void clearCart() {
         if (this.details != null) {
             this.details.clear();
         }
+        this.total = 0.0; // reinicia total
     }
 
-    public double getTotal() {
-        if (this.details == null || this.details.isEmpty()) {
-            return 0.0;
-        }
-        return this.details.stream()
+    private void recalculateTotal() {
+        this.total = (this.details == null || this.details.isEmpty()) ? 0.0 :
+            this.details.stream()
                 .mapToDouble(detail -> detail.getExpansionPack().getPrice())
                 .sum();
     }

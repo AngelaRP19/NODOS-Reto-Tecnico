@@ -11,4 +11,5 @@ public interface  UsersService {
     Integer createUser(User user);
     User updateUser(Integer id, User user);
     void deleteUser(Integer id);
+    User updateUserRole(Integer id, String role);
 }

@@ -23,50 +23,45 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart getCartByUser(Integer userId) {
-        return cartRepository.findByUserId(userId)
+        return cartRepository.findByUserIdAndStatus(userId, "activo")
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId).orElseThrow();
                     Cart newCart = new Cart();
                     newCart.setUser(user);
                     newCart.setStatus("activo");
+                    newCart.setTotal(0.0);
                     return cartRepository.save(newCart);
                 });
     }
 
     @Override
     public Cart addToCart(Integer userId, Integer expansionId, Integer platformId) {
-
         Cart cart = getCartByUser(userId);
 
         ExpansionPack expansion = expansionRepository.findById(expansionId)
                 .orElseThrow(() -> new RuntimeException("Expansion not found"));
-                
         Platform platform = platformsRepository.findById(platformId)
                 .orElseThrow(() -> new RuntimeException("Platform not found"));
 
-        cart.addExpansion(expansion, platform);
-
+        cart.addExpansion(expansion, platform); // recalcula dentro de Cart
         return cartRepository.save(cart);
     }
 
     @Override
     public Cart removeFromCart(Integer userId, Integer expansionId) {
-
         Cart cart = getCartByUser(userId);
 
         ExpansionPack expansion = expansionRepository.findById(expansionId)
                 .orElseThrow();
 
-        cart.removeExpansion(expansion);
-
+        cart.removeExpansion(expansion); // recalcula dentro de Cart
         return cartRepository.save(cart);
     }
 
     @Override
     public void clearCart(Integer userId) {
-
         Cart cart = getCartByUser(userId);
-        cart.clearCart();
+        cart.clearCart(); // limpia y pone total en 0
         cartRepository.save(cart);
     }
 }

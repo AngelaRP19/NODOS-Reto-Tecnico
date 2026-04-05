@@ -2,7 +2,11 @@ package com.nodo.retotecnico.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,9 +18,12 @@ import com.nodo.retotecnico.dto.AuthResponse;
 import com.nodo.retotecnico.dto.LoginRequest;
 import com.nodo.retotecnico.dto.OAuth2Response;
 import com.nodo.retotecnico.dto.RegisterRequest;
+import com.nodo.retotecnico.model.User;
+import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.security.JwtUtil;
 import com.nodo.retotecnico.serviceImpl.UsersServiceImpl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +35,42 @@ public class AuthController {
     @Autowired
     private UsersServiceImpl usersService;
 
-    @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request){
-        String token = jwtUtil.createToken(request.getUsername());
-        return new AuthResponse(token);
+    @Autowired
+    private UserRepository userRepository;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @PostMapping("/register-admin")
+    public ResponseEntity<?> registerAdmin(@RequestBody RegisterRequest request) {
+        var existing = userRepository.findByUsername(request.getUsername());
+        if (existing.isPresent()) {
+            User user = existing.get();
+            user.setRole("ROLE_ADMIN");
+            userRepository.save(user);
+            return ResponseEntity.ok("User promoted to admin");
+        }
+        usersService.registerUser(request);
+        var newUser = userRepository.findByUsername(request.getUsername());
+        if (newUser.isPresent()) {
+            User user = newUser.get();
+            user.setRole("ROLE_ADMIN");
+            userRepository.save(user);
+        }
+        return ResponseEntity.ok("Admin user created");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request){
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+            String token = jwtUtil.createToken(request.getUsername());
+            return ResponseEntity.ok(new AuthResponse(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
     }
 
     @PostMapping("/register")
@@ -64,5 +102,16 @@ public class AuthController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            jwtUtil.invalidateToken(token);
+        }
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok("Logout exitoso");
     }
 }

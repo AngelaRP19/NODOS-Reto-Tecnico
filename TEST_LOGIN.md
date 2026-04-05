@@ -37,8 +37,8 @@ Started RetoTecnicoApplication in X.XXX seconds (process running for Y.YYY)
 curl -X POST http://localhost:8081/auth/register \
      -H "Content-Type: application/json" \
      -d '{
-           "username": "testuser",
-           "password": "Testpass123!",
+           "username": "testuser22",
+           "password": "Testpass1232!",
            "email": "test@example.com",
            "name": "Test User",
            "firstName": "Test",

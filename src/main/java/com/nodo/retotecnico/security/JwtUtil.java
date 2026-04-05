@@ -2,6 +2,7 @@ package com.nodo.retotecnico.security;
 
 import io.jsonwebtoken.*;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtil {
     private String SECRET;
+    private final ConcurrentHashMap<String, Boolean> tokenBlacklist = new ConcurrentHashMap<>();
     
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.SECRET = secret;
@@ -35,5 +37,13 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public void invalidateToken(String token) {
+        tokenBlacklist.put(token, true);
+    }
+
+    public boolean isTokenInvalidated(String token) {
+        return tokenBlacklist.containsKey(token);
     }
 }
