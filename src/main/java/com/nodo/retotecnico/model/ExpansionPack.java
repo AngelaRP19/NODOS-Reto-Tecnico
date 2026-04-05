@@ -33,6 +33,7 @@ public class ExpansionPack {
     private String category;
     private String publicationDate;
     private String language;
+    private Boolean deleted = false;
    
 
     @OneToMany(mappedBy = "expansionPack", cascade = CascadeType.ALL, orphanRemoval = true)

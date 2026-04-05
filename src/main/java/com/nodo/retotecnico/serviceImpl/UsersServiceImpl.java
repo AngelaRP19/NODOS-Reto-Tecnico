@@ -78,6 +78,14 @@ public class UsersServiceImpl implements UsersService{
         }
         UserRepository.deleteById(id);
     }
+
+    @Override
+    public User updateUserRole(Integer id, String role) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(role);
+        return UserRepository.save(user);
+    }
 }
 
 

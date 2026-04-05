@@ -31,6 +31,7 @@ public class Cart {
     private Integer id;
 
     private String status; // "activo", "inactivo", "comprado" 
+    private Boolean deleted = false;
 
     private Double total = 0.0; // <-- nuevo campo persistente
 

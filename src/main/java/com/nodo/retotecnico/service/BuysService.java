@@ -11,4 +11,6 @@ public interface BuysService{
     Buy updateBuy(Integer id, Buy buy);
     void deleteBuy(Integer id);
     List<Buy> getBuysByUser(Integer userId);
+    Buy createDirectBuy(Integer userId, Integer expansionId, Integer platformId, String paymentMethod);
+    Buy purchaseFromCart(Integer userId, String paymentMethod);
 }

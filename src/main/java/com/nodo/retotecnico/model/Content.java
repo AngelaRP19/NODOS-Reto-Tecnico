@@ -25,5 +25,6 @@ public class Content {
     @Column(columnDefinition = "TEXT")
     private String description;
     private String image;
+    private Boolean deleted = false;
 
 }

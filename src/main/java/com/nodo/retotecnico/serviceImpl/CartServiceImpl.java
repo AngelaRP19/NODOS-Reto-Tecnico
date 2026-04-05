@@ -23,7 +23,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart getCartByUser(Integer userId) {
-        return cartRepository.findByUserId(userId)
+        return cartRepository.findByUserIdAndStatus(userId, "activo")
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId).orElseThrow();
                     Cart newCart = new Cart();

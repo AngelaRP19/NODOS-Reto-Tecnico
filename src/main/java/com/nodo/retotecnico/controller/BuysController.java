@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nodo.retotecnico.dto.BuyResponseDTO;
+import com.nodo.retotecnico.dto.DirectBuyRequest;
 import com.nodo.retotecnico.model.Buy;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.BuysService;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/nodos/buys")
@@ -85,16 +88,18 @@ public class BuysController {
 
     // Obtiene todas las compras del usuario autenticado
     @GetMapping
-    public List<Buy> getUserBuys() {
+    public List<BuyResponseDTO> getUserBuys() {
         User currentUser = getAuthenticatedUserEntity();
-        return buysService.getBuysByUser(currentUser.getId());
+        return buysService.getBuysByUser(currentUser.getId()).stream()
+            .map(BuyResponseDTO::fromBuy)
+            .collect(Collectors.toList());
     }
 
     /**
      * Obtiene una compra específica del usuario
      */
     @GetMapping("/{id}")
-    public Buy getBuyById(@PathVariable Integer id) {
+    public BuyResponseDTO getBuyById(@PathVariable Integer id) {
         
         Buy buy = buysService.getBuyById(id);
         if (buy == null) {
@@ -108,7 +113,7 @@ public class BuysController {
             throw new AccessDeniedException("No tienes permiso para ver esta compra");
         }
         
-        return buy;
+        return BuyResponseDTO.fromBuy(buy);
     }
     
     @PostMapping("/add")
@@ -135,5 +140,24 @@ public class BuysController {
         validateUserOwnsBuy(id);
         buysService.deleteBuy(id);
         return ResponseEntity.ok("Buy deleted successfully");
+    }
+
+    @PostMapping("/direct")
+    public BuyResponseDTO directBuy(@RequestBody DirectBuyRequest request) {
+        User currentUser = getAuthenticatedUserEntity();
+        Buy buy = buysService.createDirectBuy(
+            currentUser.getId(), 
+            request.getExpansionId(), 
+            request.getPlatformId(),
+            request.getPaymentMethod()
+        );
+        return BuyResponseDTO.fromBuy(buy);
+    }
+
+    @PostMapping("/purchase")
+    public BuyResponseDTO purchaseFromCart(@RequestBody String paymentMethod) {
+        User currentUser = getAuthenticatedUserEntity();
+        Buy buy = buysService.purchaseFromCart(currentUser.getId(), paymentMethod);
+        return BuyResponseDTO.fromBuy(buy);
     }
 }
