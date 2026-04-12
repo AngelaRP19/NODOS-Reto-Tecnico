@@ -18,7 +18,6 @@ import lombok.Setter;
 @Table(name = "cart_details")
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class CartDetails {
     
     @Id
@@ -37,7 +36,6 @@ public class CartDetails {
     @JoinColumn(name = "platform_id", nullable = false)
     private Platform platform;
 
-    @Column(nullable = false)
-    private Integer quantity = 1;
-    
+    @jakarta.persistence.Column(nullable = false)
+    private Integer quantity;
 }

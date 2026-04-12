@@ -28,6 +28,7 @@ public class Buy {
     private double totalPrice;
     private String paymentMethod;
     private String status;
+    private Boolean deleted = false;
 
     @OneToOne
     @JoinColumn(name = "cart_id", nullable = false)

@@ -1,6 +1,7 @@
 package com.nodo.retotecnico.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nodo.retotecnico.dto.PlatformDTO;
 import com.nodo.retotecnico.model.Platform;
 import com.nodo.retotecnico.service.PlatformsService;
 
@@ -29,25 +31,34 @@ public class PlatformController {
     }
 
     @GetMapping
-    public List<Platform> getAllPlatforms() {
-        return platformsService.getAllPlatform();
+    public List<PlatformDTO> getAllPlatforms() {
+        return platformsService.getAllPlatform().stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
 
     @GetMapping ("/{id}")
-    public Platform getPlatformById(@PathVariable Integer id) {
-        return platformsService.getPlatformById(id);
+    public PlatformDTO getPlatformById(@PathVariable Integer id) {
+        return convertToDTO(platformsService.getPlatformById(id));
     }
+    
     @PostMapping("/add")
     public Integer createPlatform(@RequestBody Platform platforms) {
         return platformsService.createPlatform(platforms);
     }
+    
     @PutMapping("/{id}")
     public ResponseEntity<Platform> updatePlatform(@PathVariable Integer id, @RequestBody Platform platforms){
         return ResponseEntity.ok(platformsService.updatePlatform(id, platforms));
     }
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePlatform(@PathVariable Integer id){
         platformsService.deletePlatform(id);
         return ResponseEntity.ok("Platform deleted successfully");
+    }
+
+    private PlatformDTO convertToDTO(Platform platform) {
+        return new PlatformDTO(platform.getId(), platform.getName());
     }
 }

@@ -25,8 +25,9 @@ public class Platform {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String name;  // Ej. Xbox, PlayStation®
-    private String url;   // URL de la tienda
+    private String name;
+    private String url;
+    private Boolean deleted = false;
 
     @OneToMany(mappedBy = "platform")
     private List<CartDetails> cartDetails;

@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,7 @@ public class CartController {
     @Autowired
     private UserRepository userRepository;
 
+    // Obtener usuario autenticado
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         
@@ -63,6 +65,7 @@ public class CartController {
         return user;
     }
 
+    // Convertir entidad Cart a DTO
     private CartResponseDTO convertToDTO(Cart cart) {
         User user = cart.getUser();
         UserDTO userDTO = new UserDTO(
@@ -88,10 +91,16 @@ public class CartController {
                 return new CartItemDTO(detail.getId(), packDTO, platformDTO);
             }).collect(Collectors.toList()) : List.of();
 
-        return new CartResponseDTO(cart.getId(), cart.getStatus(), userDTO, items);
+        return new CartResponseDTO(
+            cart.getId(),
+            cart.getStatus(),
+            userDTO,
+            items,
+            cart.getTotal() // siempre devuelve el total actualizado
+        );
     }
 
-    //Ver carrito
+    // Ver carrito
     @GetMapping
     public CartResponseDTO getCart() {
         User authenticatedUser = getAuthenticatedUser();
@@ -99,7 +108,7 @@ public class CartController {
         return convertToDTO(cart);
     }
 
-    // Agregar a carrito
+    // Agregar producto al carrito
     @PostMapping("/add")
     public CartResponseDTO addToCart(@RequestParam Integer expansionId, @RequestParam Integer platformId) {
         User authenticatedUser = getAuthenticatedUser();
@@ -107,8 +116,8 @@ public class CartController {
         return convertToDTO(cart);
     }
 
-    // Remover del carrito
-    @PostMapping("/remove")
+    // Remover producto del carrito
+    @DeleteMapping("/remove")
     public CartResponseDTO removeFromCart(@RequestParam Integer expansionId) {
         User authenticatedUser = getAuthenticatedUser();
         Cart cart = cartService.removeFromCart(authenticatedUser.getId(), expansionId);
@@ -116,7 +125,7 @@ public class CartController {
     }
 
     // Vaciar carrito
-    @PostMapping("/clear")
+    @DeleteMapping("/clear")
     public void clearCart() {
         User authenticatedUser = getAuthenticatedUser();
         cartService.clearCart(authenticatedUser.getId());

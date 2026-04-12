@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
-
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.service.UsersService;
 
+import jakarta.validation.Valid;
+
 @RestController
-@RequestMapping("/nodos/Users")
+@RequestMapping("/nodos/users")
 public class UsersController {
 
     @Autowired
@@ -48,6 +48,11 @@ public class UsersController {
     public ResponseEntity<String> deleteUser(@PathVariable Integer id){
         usersService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> updateUserRole(@PathVariable Integer id, @RequestBody String role){
+        return ResponseEntity.ok(usersService.updateUserRole(id, role));
     }
 
 }
