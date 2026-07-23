@@ -20,6 +20,7 @@ import com.nodo.retotecnico.dto.OAuth2Response;
 import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.security.JwtUtil;
 import com.nodo.retotecnico.service.UsersService;
+import com.nodo.retotecnico.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -35,6 +36,9 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/register-admin")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterRequest request) {
@@ -57,6 +61,7 @@ public class AuthController {
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         usersService.registerUser(request);
+        emailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
         String token = jwtUtil.createToken(request.getUsername());
         return new AuthResponse(token);
     }

@@ -44,3 +44,9 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:default_secret_key_please_change}
+
+resend:
+  token: ${RESEND_API_KEY:dummy_key_for_tests}
+  email:
+    from: tu-correo@dominio.com
+    to: destino@dominio.com
