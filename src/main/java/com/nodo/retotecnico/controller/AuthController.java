@@ -24,6 +24,8 @@ import com.nodo.retotecnico.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -107,4 +109,17 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logout exitoso");
     }
+
+
+@PostMapping("/forgot-password")
+public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+    usersService.initiatePasswordReset(request.get("email"));
+    return ResponseEntity.ok("Correo de recuperación enviado si el usuario existe.");
+}
+
+@PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    usersService.resetPassword(request.get("token"), request.get("newPassword"));
+    return ResponseEntity.ok("Contraseña actualizada correctamente.");
+}
 }

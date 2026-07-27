@@ -2,6 +2,8 @@ package com.nodo.retotecnico.serviceImpl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,44 +11,51 @@ import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.model.User;
+import com.nodo.retotecnico.model.PasswordResetToken;
 import com.nodo.retotecnico.repository.UserRepository;
+import com.nodo.retotecnico.repository.PasswordResetTokenRepository;
 import com.nodo.retotecnico.service.UsersService;
+import com.nodo.retotecnico.service.EmailService;
 
 @Service
-public class UsersServiceImpl implements UsersService{
+public class UsersServiceImpl implements UsersService {
 
     @Autowired
-    private UserRepository UserRepository;
-
-    @Autowired
-    private com.nodo.retotecnico.repository.UserRepository specificUserRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public List<User> getAllUsers() {
-        return UserRepository.findAll();
+        return userRepository.findAll();
     }
 
     @Override
-    public User getUsersById(Integer id){
-        return UserRepository.findById(id).orElse(null);
+    public User getUsersById(Integer id) {
+        return userRepository.findById(id).orElse(null);
     }
-    
+
     @Override
     public Integer createUser(User user) {
-        // Fallback for creating user directly if needed
-        return UserRepository.save(user).getId();
+        return userRepository.save(user).getId();
     }
 
+    @Override
     public Integer registerUser(RegisterRequest request) {
-        if (UserRepository.findByUsername(request.getUsername()).isPresent()) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("El nombre de usuario ya está en uso.");
         }
-        if (request.getEmail() != null && UserRepository.findByEmail(request.getEmail()) != null) {
+        if (request.getEmail() != null && userRepository.findByEmail(request.getEmail()) != null) {
             throw new RuntimeException("El correo electrónico ya está en uso.");
         }
+
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -58,27 +67,28 @@ public class UsersServiceImpl implements UsersService{
         newUser.setRegistrationDate(new Date());
         newUser.setEmail(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com");
 
-        return UserRepository.save(newUser).getId();
+        return userRepository.save(newUser).getId();
     }
 
+    @Override
     public String registerAdmin(RegisterRequest request) {
-        var existing = UserRepository.findByUsername(request.getUsername());
+        var existing = userRepository.findByUsername(request.getUsername());
         if (existing.isPresent()) {
             throw new RuntimeException("El nombre de usuario ya está en uso.");
         }
 
         registerUser(request);
-        User createdUser = UserRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Error creating admin user"));
+        User createdUser = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("Error creando usuario administrador"));
         createdUser.setRole("ROLE_ADMIN");
-        UserRepository.save(createdUser);
+        userRepository.save(createdUser);
 
         return "Admin user created";
     }
 
     @Override
     public void processOAuthPostLogin(String username, String email, String name, String firstName, String lastName) {
-        if (UserRepository.findByUsername(username).isEmpty()) {
+        if (userRepository.findByUsername(username).isEmpty()) {
             User newUser = new User();
             newUser.setUsername(username);
             newUser.setEmail(email);
@@ -88,34 +98,60 @@ public class UsersServiceImpl implements UsersService{
             newUser.setRole("ROLE_USER");
             newUser.setRegistrationDate(new Date());
             newUser.setPassword(""); // OAuth2 users might not need a password
-            UserRepository.save(newUser);
+            userRepository.save(newUser);
         }
     }
 
-     @Override
-    public User updateUser(Integer id, User user){
-        User existingUser = UserRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("User no found"));
+    @Override
+    public User updateUser(Integer id, User user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         existingUser.setName(user.getName());
         existingUser.setEmail(user.getEmail());
 
-        return UserRepository.save(existingUser);
+        return userRepository.save(existingUser);
     }
+
     @Override
-    public void deleteUser(Integer id){
-        if (!UserRepository.existsById(id)){
-            throw new RuntimeException("User no found");
+    public void deleteUser(Integer id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
         }
-        UserRepository.deleteById(id);
+        userRepository.deleteById(id);
     }
 
     @Override
     public User updateUserRole(Integer id, String role) {
-        User user = UserRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setRole(role);
-        return UserRepository.save(user);
+        return userRepository.save(user);
+    }
+
+  
+    // Recuperación de contraseña
+  
+    @Override
+    public void initiatePasswordReset(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user != null) {
+            String token = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = new PasswordResetToken(user, token,
+                    new Date(System.currentTimeMillis() + 3600000)); // expira en 1 hora
+            passwordResetTokenRepository.save(resetToken);
+            emailService.sendPasswordResetEmail(email, token);
+        }
+    }
+
+    @Override
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Token inválido o expirado"));
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(resetToken);
     }
 }
 
