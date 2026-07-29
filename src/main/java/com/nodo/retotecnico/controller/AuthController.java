@@ -1,6 +1,7 @@
 package com.nodo.retotecnico.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,8 @@ import com.nodo.retotecnico.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -41,6 +44,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @PostMapping("/register-admin")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterRequest request) {
@@ -100,15 +106,16 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            jwtUtil.invalidateToken(token);
-        }
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Logout exitoso");
+   public ResponseEntity<?> logout(HttpServletRequest request, Locale locale) {
+    String header = request.getHeader("Authorization");
+    if (header != null && header.startsWith("Bearer ")) {
+        String token = header.substring(7);
+        jwtUtil.invalidateToken(token);
     }
+    SecurityContextHolder.clearContext();
+    String message = messageSource.getMessage("auth.logout.success", null, locale);
+    return ResponseEntity.ok(message);
+}
 
 
 @PostMapping("/forgot-password")
