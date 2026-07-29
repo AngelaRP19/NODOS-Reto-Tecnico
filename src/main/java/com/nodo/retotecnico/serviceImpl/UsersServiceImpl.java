@@ -153,6 +153,15 @@ public class UsersServiceImpl implements UsersService {
         userRepository.save(user);
         passwordResetTokenRepository.delete(resetToken);
     }
+
+@Override
+public void changePassword(User user, String currentPassword, String newPassword) {
+    if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+        throw new IllegalArgumentException("La contraseña actual es incorrecta");
+    }
+    user.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.save(user);
+}
 }
 
 
