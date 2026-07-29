@@ -18,12 +18,9 @@ import com.nodo.retotecnico.dto.AuthResponse;
 import com.nodo.retotecnico.dto.LoginRequest;
 import com.nodo.retotecnico.dto.OAuth2Response;
 import com.nodo.retotecnico.dto.RegisterRequest;
-import com.nodo.retotecnico.dto.ChangePasswordRequest;
 import com.nodo.retotecnico.security.JwtUtil;
 import com.nodo.retotecnico.service.UsersService;
 import com.nodo.retotecnico.service.EmailService;
-import com.nodo.retotecnico.model.User;
-
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -125,12 +122,4 @@ public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request)
     usersService.resetPassword(request.get("token"), request.get("newPassword"));
     return ResponseEntity.ok("Contraseña actualizada correctamente.");
 }
-
-@PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(
-            @AuthenticationPrincipal User user,
-            @RequestBody ChangePasswordRequest request) {
-        usersService.changePassword(user, request.getCurrentPassword(), request.getNewPassword());
-        return ResponseEntity.ok("Contraseña actualizada correctamente.");
-    }
 }

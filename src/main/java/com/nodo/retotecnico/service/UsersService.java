@@ -18,8 +18,6 @@ public interface  UsersService {
     void processOAuthPostLogin(String username, String email, String name, String firstName, String lastName);
     void initiatePasswordReset(String email);
     void resetPassword(String token, String newPassword);
-    void changePassword(User user, String currentPassword, String newPassword);
-
 
 }
 
