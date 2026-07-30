@@ -1,4 +1,10 @@
 spring:
+  messages:
+    basename: messages
+    encoding: UTF-8
+  web:
+    
+    locale-resolver: accept-header
   application:
     name: reto-tecenico
   datasource:
