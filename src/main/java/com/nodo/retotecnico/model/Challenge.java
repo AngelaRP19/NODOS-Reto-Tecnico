@@ -1,5 +1,7 @@
 package com.nodo.retotecnico.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,32 +9,34 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table(name = "contents")
-@AllArgsConstructor
+@Table(name = "challenges")
 @NoArgsConstructor
-public class Content {
-    
+@AllArgsConstructor
+public class Challenge {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String section;
-    private String title;
+
+    private String name;
+
+    @Column(name = "start_date")
+    private LocalDate start;
+
+    @Column(name = "end_date")
+    private LocalDate end;
+
     @Column(columnDefinition = "TEXT")
     private String description;
-    private String image;
+
+    private String imageURL;
+
     private Boolean deleted = false;
-
-    
-    private String fieldName;
-    private String fieldType;
-    private Boolean required = false;
-    @Column(columnDefinition = "TEXT")
-    private String options;
-    private Integer displayOrder;
-
 }

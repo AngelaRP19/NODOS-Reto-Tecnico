@@ -56,3 +56,5 @@ resend:
   email:
     from: tu-correo@dominio.com
     to: destino@dominio.com
+frontend:
+  url: ${FRONTEND_URL:http://localhost:5173/}

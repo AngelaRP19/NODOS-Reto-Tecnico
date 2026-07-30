@@ -6,10 +6,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.dto.RegisterRequest;
+import com.nodo.retotecnico.dto.UpdateProfileRequest;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.model.PasswordResetToken;
 import com.nodo.retotecnico.repository.UserRepository;
@@ -66,6 +68,7 @@ public class UsersServiceImpl implements UsersService {
         newUser.setRole("ROLE_USER");
         newUser.setRegistrationDate(new Date());
         newUser.setEmail(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com");
+        newUser.setBetaTester(request.getBetaTester() != null ? request.getBetaTester() : false);
 
         return userRepository.save(newUser).getId();
     }
@@ -152,6 +155,51 @@ public class UsersServiceImpl implements UsersService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.delete(resetToken);
+    }
+
+    @Override
+    public User updateBetaTester(Integer id, Boolean betaTester) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setBetaTester(betaTester);
+        return UserRepository.save(user);
+    }
+
+    @Override
+    public Integer getCompletedChallenges(Integer id) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getCompletedChallenges() == null ? 0 : user.getCompletedChallenges();
+    }
+
+    @Override
+    public User updateOwnProfile(Integer id, UpdateProfileRequest request) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setCountry(request.getCountry());
+        // Mantener `name` consistente con firstName/lastName, igual que se arma en el registro.
+        user.setName(request.getFirstName() + " " + request.getLastName());
+        return UserRepository.save(user);
+    }
+
+    @Override
+    public User changePassword(Integer id, String currentPassword, String newPassword) {
+        User user = UserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean hasPassword = user.getPassword() != null && !user.getPassword().isEmpty();
+        if (hasPassword) {
+            if (currentPassword == null || currentPassword.isEmpty()
+                    || !passwordEncoder.matches(currentPassword, user.getPassword())) {
+                throw new AccessDeniedException("La contraseña actual no coincide.");
+            }
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return UserRepository.save(user);
     }
 }
 
