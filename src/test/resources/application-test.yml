@@ -38,4 +38,4 @@ spring:
             user-name-attribute: id
 
 jwt:
-  secret: 12345678901234567890123456789012
+  secret: test_jwt_secret_key_for_testing_purposes_only

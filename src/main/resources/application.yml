@@ -1,4 +1,10 @@
 spring:
+  messages:
+    basename: messages
+    encoding: UTF-8
+  web:
+    
+    locale-resolver: accept-header
   application:
     name: reto-tecenico
   datasource:
@@ -45,5 +51,10 @@ server:
 jwt:
   secret: ${JWT_SECRET:default_secret_key_please_change}
 
+resend:
+  token: ${RESEND_API_KEY:dummy_key_for_tests}
+  email:
+    from: tu-correo@dominio.com
+    to: destino@dominio.com
 frontend:
   url: ${FRONTEND_URL:http://localhost:5173/}

@@ -1,6 +1,7 @@
 package com.nodo.retotecnico.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,9 +29,14 @@ import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.security.JwtUtil;
 import com.nodo.retotecnico.service.UsersService;
+import com.nodo.retotecnico.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
+import java.util.Locale;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -47,6 +53,11 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private MessageSource messageSource;
     // Mismo patrón que BuysController.getAuthenticatedUsername(): soporta tanto
     // el JwtFilter (principal = UserDetails) como OAuth2Login (principal = OAuth2User).
     private String getAuthenticatedUsername() {
@@ -126,6 +137,7 @@ public class AuthController {
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         usersService.registerUser(request);
+        emailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
         String token = jwtUtil.createToken(request.getUsername());
         return new AuthResponse(token);
     }
@@ -162,13 +174,27 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            jwtUtil.invalidateToken(token);
-        }
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok("Logout exitoso");
+   public ResponseEntity<?> logout(HttpServletRequest request, Locale locale) {
+    String header = request.getHeader("Authorization");
+    if (header != null && header.startsWith("Bearer ")) {
+        String token = header.substring(7);
+        jwtUtil.invalidateToken(token);
     }
+    SecurityContextHolder.clearContext();
+    String message = messageSource.getMessage("auth.logout.success", null, locale);
+    return ResponseEntity.ok(message);
+}
+
+
+@PostMapping("/forgot-password")
+public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+    usersService.initiatePasswordReset(request.get("email"));
+    return ResponseEntity.ok("Correo de recuperación enviado si el usuario existe.");
+}
+
+@PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    usersService.resetPassword(request.get("token"), request.get("newPassword"));
+    return ResponseEntity.ok("Contraseña actualizada correctamente.");
+}
 }
