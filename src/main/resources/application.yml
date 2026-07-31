@@ -56,5 +56,9 @@ resend:
   email:
     from: tu-correo@dominio.com
     to: destino@dominio.com
+
+crypto:
+  secret-key: ${CRYPTO_SECRET_KEY:ILluF20Aavb5J6XZ/qw67TSAQxkCPoi3IWQs1fI2sYA=}
+
 frontend:
   url: ${FRONTEND_URL:http://localhost:5173/}
