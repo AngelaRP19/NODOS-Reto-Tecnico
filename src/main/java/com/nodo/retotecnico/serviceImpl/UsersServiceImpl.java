@@ -2,7 +2,6 @@ package com.nodo.retotecnico.serviceImpl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +11,12 @@ import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.dto.UpdateProfileRequest;
-import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.model.PasswordResetToken;
-import com.nodo.retotecnico.repository.UserRepository;
+import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.PasswordResetTokenRepository;
-import com.nodo.retotecnico.service.UsersService;
+import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.EmailService;
+import com.nodo.retotecnico.service.UsersService;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -143,7 +142,12 @@ public class UsersServiceImpl implements UsersService {
             PasswordResetToken resetToken = new PasswordResetToken(user, token,
                     new Date(System.currentTimeMillis() + 3600000)); // expira en 1 hora
             passwordResetTokenRepository.save(resetToken);
-            emailService.sendPasswordResetEmail(email, token);
+            try {
+                emailService.sendPasswordResetEmail(email, token);
+            } catch (Exception e) {
+                // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar el reset de contraseña.
+                e.printStackTrace();
+            }
         }
     }
 
@@ -159,22 +163,22 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public User updateBetaTester(Integer id, Boolean betaTester) {
-        User user = UserRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setBetaTester(betaTester);
-        return UserRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public Integer getCompletedChallenges(Integer id) {
-        User user = UserRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return user.getCompletedChallenges() == null ? 0 : user.getCompletedChallenges();
     }
 
     @Override
     public User updateOwnProfile(Integer id, UpdateProfileRequest request) {
-        User user = UserRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -182,12 +186,12 @@ public class UsersServiceImpl implements UsersService {
         user.setCountry(request.getCountry());
         // Mantener `name` consistente con firstName/lastName, igual que se arma en el registro.
         user.setName(request.getFirstName() + " " + request.getLastName());
-        return UserRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public User changePassword(Integer id, String currentPassword, String newPassword) {
-        User user = UserRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         boolean hasPassword = user.getPassword() != null && !user.getPassword().isEmpty();
@@ -199,7 +203,7 @@ public class UsersServiceImpl implements UsersService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        return UserRepository.save(user);
+        return userRepository.save(user);
     }
 }
 

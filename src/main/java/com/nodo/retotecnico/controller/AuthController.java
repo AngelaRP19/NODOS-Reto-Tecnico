@@ -137,7 +137,12 @@ public class AuthController {
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         usersService.registerUser(request);
-        emailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
+        try {
+            emailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
+        } catch (Exception e) {
+            // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar el registro.
+            e.printStackTrace();
+        }
         String token = jwtUtil.createToken(request.getUsername());
         return new AuthResponse(token);
     }
