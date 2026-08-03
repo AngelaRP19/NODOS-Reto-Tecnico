@@ -1,7 +1,10 @@
 package com.nodo.retotecnico.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nodo.retotecnico.dto.AuthResponse;
 import com.nodo.retotecnico.dto.ChangePasswordRequest;
 import com.nodo.retotecnico.dto.CurrentUserDTO;
+import com.nodo.retotecnico.dto.EncryptedRequest;
 import com.nodo.retotecnico.dto.LoginRequest;
 import com.nodo.retotecnico.dto.OAuth2Response;
 import com.nodo.retotecnico.dto.RegisterRequest;
@@ -29,14 +34,10 @@ import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.security.JwtUtil;
 import com.nodo.retotecnico.service.UsersService;
-import com.nodo.retotecnico.service.EmailService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
-
-import java.util.Locale;
-import java.util.Map;
-
 
 @RestController
 @RequestMapping("/auth")
@@ -52,6 +53,35 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private Validator validator;
+
+    @Value("${crypto.secret-key}")
+    private String cryptoSecretKey;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    /** Desencripta el body cifrado que manda el front y lo convierte al DTO indicado. */
+    private <T> T decryptBody(EncryptedRequest encrypted, Class<T> targetType) {
+        try {
+            String json = CryptoUtil.decrypt(encrypted.getData(), encrypted.getIv(), cryptoSecretKey);
+            return objectMapper.readValue(json, targetType);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo procesar la solicitud.");
+        }
+    }
+
+    /** Réplica el formato de error de GlobalExceptionHandler para @Valid, pero validando a mano
+     *  porque acá el DTO no llega directo por @RequestBody (llega cifrado y se arma manualmente). */
+    private <T> Map<String, String> validateManually(T target) {
+        Set<ConstraintViolation<T>> violations = validator.validate(target);
+        Map<String, String> errors = new HashMap<>();
+        for (ConstraintViolation<T> violation : violations) {
+            errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        }
+        return errors;
+    }
 
     @Autowired
     private EmailService emailService;
@@ -122,7 +152,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request){
+    public ResponseEntity<?> login(@RequestBody EncryptedRequest encryptedRequest){
+        LoginRequest request = decryptBody(encryptedRequest, LoginRequest.class);
         try {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -135,7 +166,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody EncryptedRequest encryptedRequest) {
+        RegisterRequest request = decryptBody(encryptedRequest, RegisterRequest.class);
+
+        Map<String, String> errors = validateManually(request);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(errors);
+        }
+
         usersService.registerUser(request);
         try {
             emailService.sendWelcomeEmail(request.getEmail(), request.getUsername());
@@ -144,7 +182,7 @@ public class AuthController {
             e.printStackTrace();
         }
         String token = jwtUtil.createToken(request.getUsername());
-        return new AuthResponse(token);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @GetMapping("/oauth2/success")
