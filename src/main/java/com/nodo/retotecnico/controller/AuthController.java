@@ -1,10 +1,13 @@
 package com.nodo.retotecnico.controller;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,11 +36,14 @@ import com.nodo.retotecnico.dto.UpdateProfileRequest;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.security.JwtUtil;
+import com.nodo.retotecnico.service.EmailService;
 import com.nodo.retotecnico.service.UsersService;
+import com.nodo.retotecnico.util.CryptoUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping("/auth")
@@ -68,7 +74,7 @@ public class AuthController {
             String json = CryptoUtil.decrypt(encrypted.getData(), encrypted.getIv(), cryptoSecretKey);
             return objectMapper.readValue(json, targetType);
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo procesar la solicitud.");
+            throw new RuntimeException("No se pudo procesar la solicitud.", e);
         }
     }
 
@@ -135,8 +141,16 @@ public class AuthController {
     @PutMapping("/me")
     public CurrentUserDTO updateOwnProfile(@Valid @RequestBody UpdateProfileRequest request) {
         User currentUser = getAuthenticatedUserEntity();
+        String oldUsername = currentUser.getUsername();
         User updated = usersService.updateOwnProfile(currentUser.getId(), request);
-        return CurrentUserDTO.fromUser(updated);
+        CurrentUserDTO dto = CurrentUserDTO.fromUser(updated);
+        if (!oldUsername.equals(updated.getUsername())) {
+            // El JWT actual tiene oldUsername como subject y dejaría de autenticar en la
+            // siguiente request (JwtFilter -> loadUserByUsername(oldUsername) ya no lo
+            // encuentra); se reemite uno nuevo para que el front lo reemplace sin cortar la sesión.
+            dto.setToken(jwtUtil.createToken(updated.getUsername()));
+        }
+        return dto;
     }
 
     @PutMapping("/me/password")
