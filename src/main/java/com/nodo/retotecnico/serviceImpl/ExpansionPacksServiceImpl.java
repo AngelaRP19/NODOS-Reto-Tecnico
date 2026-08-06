@@ -42,6 +42,9 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
         existingExpansionPack.setLanguage(expansionPack.getLanguage());
         existingExpansionPack.setURLImage(expansionPack.getURLImage());
         existingExpansionPack.setCharacteristics(expansionPack.getCharacteristics());
+        existingExpansionPack.setScreenshots(expansionPack.getScreenshots());
+        existingExpansionPack.setMinimumRequirements(expansionPack.getMinimumRequirements());
+        existingExpansionPack.setRecommendedRequirements(expansionPack.getRecommendedRequirements());
         return expansionPacksRepository.save(existingExpansionPack);
     }
 

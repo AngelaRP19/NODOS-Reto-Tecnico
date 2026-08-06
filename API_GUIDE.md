@@ -207,7 +207,10 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
   "publicationDate": "2026-01-01",
   "language": "es",
   "URLImage": "http://example.com/img.png",
-  "characteristics": ["Multijugador", "4K"]
+  "characteristics": ["Multijugador", "4K"],
+  "screenshots": ["http://example.com/screenshot1.png", "http://example.com/screenshot2.png"],
+  "minimumRequirements": ["SO: Windows 10 · 64 bits", "Procesador: Intel Core i3", "Memoria: 4 GB RAM", "Almacenamiento: 8 GB disponibles"],
+  "recommendedRequirements": ["SO: Windows 10/11 · 64 bits", "Procesador: Intel Core i5", "Memoria: 8 GB RAM", "Almacenamiento: 8 GB disponibles"]
 }
 ```
 
@@ -224,11 +227,16 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
   "language": "es",
   "deleted": false,
   "characteristics": ["Multijugador", "4K"],
+  "screenshots": ["http://example.com/screenshot1.png", "http://example.com/screenshot2.png"],
+  "minimumRequirements": ["SO: Windows 10 · 64 bits", "Procesador: Intel Core i3", "Memoria: 4 GB RAM", "Almacenamiento: 8 GB disponibles"],
+  "recommendedRequirements": ["SO: Windows 10/11 · 64 bits", "Procesador: Intel Core i5", "Memoria: 8 GB RAM", "Almacenamiento: 8 GB disponibles"],
   "URLImage": "http://example.com/img.png"
 }
 ```
 
 > ⚠️ El campo se llama exactamente `URLImage` (mayúsculas tal cual) tanto para enviar como para leer — no `urlImage` ni `urlimage`. Mandarlo con otra capitalización hace que el backend lo reciba como `null` sin ningún error.
+>
+> `screenshots`, `minimumRequirements` y `recommendedRequirements` son listas de texto libre (`List<String>`), igual que `characteristics` — cada una se persiste en su propia tabla hija (`expansion_pack_screenshots`, `expansion_pack_min_requirements`, `expansion_pack_rec_requirements`).
 
 ---
 
