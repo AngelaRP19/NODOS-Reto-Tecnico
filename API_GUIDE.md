@@ -34,12 +34,12 @@ Referencia completa de endpoints para integrar el frontend (`http://localhost:51
 
 | Método | Ruta | Body | Respuesta 200 |
 |---|---|---|---|
-| POST | `/auth/register` | `{"username","password","firstName","lastName","country","email","betaTester"}` (`betaTester` opcional, ver nota) | `{"token":"<jwt>"}` |
+| POST | `/auth/register` | `{"username","password","firstName","lastName","country","email","betaTester"}` (`betaTester` opcional, ver nota) | `{"token":"<jwt>"}` — `400` si `username`/`email` ya existen, ver nota |
 | POST | `/auth/login` | `{"username","password"}` | `{"token":"<jwt>"}` |
 | POST | `/auth/register-admin` | igual que register | `"Admin user created"` o `"User promoted to admin"` (string plano) |
 | POST | `/auth/logout` | — (header `Authorization`) | `"Logout exitoso"` |
 | GET | `/auth/me` | — (requiere `Authorization: Bearer <token>`) | `200` + usuario autenticado (ver abajo) |
-| PUT | `/auth/me` | `{"firstName","lastName","email","country"}` (requiere `Authorization: Bearer <token>`) | `200` + usuario autenticado actualizado (ver abajo) |
+| PUT | `/auth/me` | `{"username","firstName","lastName","email","country"}` (requiere `Authorization: Bearer <token>`) | `200` + usuario autenticado actualizado, con `token` nuevo si el username cambió (ver abajo) |
 | PUT | `/auth/me/betatester` | `true`/`false` (boolean JSON plano, requiere `Authorization: Bearer <token>`) | `200` + usuario autenticado actualizado (ver abajo) |
 | PUT | `/auth/me/password` | `{"currentPassword","newPassword"}` (`currentPassword` opcional, ver nota; requiere `Authorization: Bearer <token>`) | `200` + usuario autenticado actualizado (ver abajo) |
 | GET | `/auth/oauth2/success` | — (requiere sesión OAuth2 activa) | `{"token","message","provider","email","name"}` |
@@ -64,21 +64,25 @@ Uno de los cuatro endpoints de `/auth/**` que requieren estar autenticado (los o
   "role": "ROLE_USER",
   "betaTester": false,
   "completedChallenges": 0,
-  "hasPassword": true
+  "hasPassword": true,
+  "token": null
 }
 ```
 
-`hasPassword` es nuevo: indica si el usuario tiene una contraseña propia guardada (`true` para cuentas registradas con `/auth/register`) o no (`false` para cuentas creadas solo por OAuth2/Google/Meta, donde `User.password` queda como `""`). Sirve para que el frontend sepa con certeza si debe mostrar "agregar contraseña" o "cambiar contraseña" en el perfil, sin depender de si la sesión actual entró por password o por OAuth2 (una misma cuenta puede haber usado ambos alguna vez).
+`hasPassword` indica si el usuario tiene una contraseña propia guardada (`true` para cuentas registradas con `/auth/register`) o no (`false` para cuentas creadas solo por OAuth2/Google/Meta, donde `User.password` queda como `""`). Sirve para que el frontend sepa con certeza si debe mostrar "agregar contraseña" o "cambiar contraseña" en el perfil, sin depender de si la sesión actual entró por password o por OAuth2 (una misma cuenta puede haber usado ambos alguna vez).
+
+`token` es nuevo y en `GET /auth/me` (y en `/me/betatester`, `/me/password`) siempre viene `null` — solo se completa en la respuesta de `PUT /auth/me` cuando ese request cambió el `username` (ver esa sección). Es parte del shape de `CurrentUserDTO` en todas las respuestas, no un campo exclusivo de un endpoint.
 
 > ⚠️ **Sin token o token malformado → 302** (no 401), exactamente igual que cualquier otro endpoint protegido de la app — ver la nota de "sin token en un endpoint protegido" al inicio de esta guía. La única forma de obtener un **401** JSON limpio en esta ruta es con un token que **sí es válido pero fue invalidado por logout** (`{"error": "Token invalidated"}`), igual que en el resto de la API. Verificado en vivo: token ausente → 302 a `/login`; token con formato inválido → 302 a `/login`; token deslogueado → 401. No se agregó un `AuthenticationEntryPoint` especial solo para esta ruta porque hubiera sido una inconsistencia respecto al resto de la API — si se necesita un verdadero 401 para "sin token" en toda la app, es un cambio más amplio a `SecurityConfig`, no algo específico de `/auth/me`. **Los otros tres endpoints de esta sección (`PUT /me`, `/me/betatester`, `/me/password`) comparten exactamente este mismo comportamiento** — no se repite la nota en cada uno.
 
 ### `PUT /auth/me`
 
-Igual que `GET /auth/me`, identifica al usuario por el JWT (no recibe `id` por path). Actualiza **solo** `firstName`, `lastName`, `email` y `country` del usuario autenticado — `username` y `role` no se pueden cambiar por acá. Valida con las mismas reglas que `/auth/register` (`firstName`/`lastName` solo letras y espacios, `email` con formato válido, `country` 2-56 caracteres) → `400` con mapa de errores si falla.
+Igual que `GET /auth/me`, identifica al usuario por el JWT (no recibe `id` por path). Actualiza `username`, `firstName`, `lastName`, `email` y `country` del usuario autenticado — `role` sigue sin poder cambiarse por acá. Valida con las mismas reglas que `/auth/register` (`username` 3-30 caracteres solo letras/números/`_`, `firstName`/`lastName` solo letras y espacios, `email` con formato válido, `country` 2-56 caracteres) → `400` con mapa de errores si falla.
 
 **Body de ejemplo:**
 ```json
 {
+  "username": "nuevoUsername",
   "firstName": "Profile",
   "lastName": "Updated",
   "email": "newemail@example.com",
@@ -86,9 +90,15 @@ Igual que `GET /auth/me`, identifica al usuario por el JWT (no recibe `id` por p
 }
 ```
 
-**Respuesta real** (`CurrentUserDTO` actualizado, mismo shape que `GET /auth/me`).
+**Respuesta real** (`CurrentUserDTO` actualizado, mismo shape que `GET /auth/me`; `token` viene poblado solo si el `username` cambió — ver abajo).
 
-> A diferencia de `PUT /nodos/users/{id}` (que solo actualiza `name`/`email` y descarta el resto silenciosamente), este endpoint sí aplica los 4 campos completos. Internamente también actualiza el campo interno `name` (`firstName + " " + lastName`) para que quede consistente con lo que ya se muestra en `Cart`/`Buy` — no es un campo separado que el frontend controle. No valida que el nuevo `email` sea único (a diferencia del registro) — no se pidió esa restricción.
+> A diferencia de `PUT /nodos/users/{id}` (que solo actualiza `name`/`email` y descarta el resto silenciosamente), este endpoint sí aplica los 5 campos completos. Internamente también actualiza el campo interno `name` (`firstName + " " + lastName`) para que quede consistente con lo que ya se muestra en `Cart`/`Buy` — no es un campo separado que el frontend controle. No valida que el nuevo `email` sea único (a diferencia del registro) — no se pidió esa restricción.
+>
+> ✅ **`username` es único, igual que en el registro**: si mandás un `username` que ya tiene otra cuenta, la respuesta es `400 {"username": "El nombre de usuario ya está en uso."}` (mismo formato que el resto de errores de campo). Si mandás el mismo `username` que ya tenías, no hay chequeo contra vos mismo — se actualiza sin problema. Verificado en vivo los tres casos: username en uso por otra cuenta (400), username libre (200), username sin cambios (200).
+>
+> 🔑 **Importante — cambiar el `username` invalida el JWT actual en la siguiente request.** El JWT tiene el `username` como `subject` (`JwtUtil.createToken(username)`), y **cada** request lo vuelve a resolver contra la base vía `JwtFilter` → `CustomUserDetailsService.loadUserByUsername(subject)`. Apenas el `username` cambia en la base, ese lookup con el `subject` viejo deja de encontrar al usuario — la siguiente request con el token viejo cae en el mismo **302** ya documentado para "sin token" (no un 401 limpio), como si la sesión se hubiera cerrado sola. Confirmado en vivo: reutilizar el token viejo después de cambiar el username → 302.
+>
+> Por eso, cuando esta ruta detecta que el `username` efectivamente cambió, **reemite un JWT nuevo** (mismo `jwtUtil.createToken(...)` que usan `register`/`login`) y lo devuelve en el campo `token` de la respuesta — el frontend tiene que **reemplazar el token guardado por este** inmediatamente después de un cambio de username exitoso, o la siguiente llamada a cualquier endpoint protegido va a fallar. Si el `username` no cambió (mismo valor, o solo cambiaron otros campos), `token` viene `null` y no hace falta hacer nada con la sesión. Verificado en vivo: token reemitido autentica correctamente en `GET /auth/me` inmediatamente después.
 
 ### `PUT /auth/me/betatester`
 
@@ -106,7 +116,8 @@ Permite que **cualquier usuario autenticado** active o cancele su propia inscrip
   "role": "ROLE_USER",
   "betaTester": true,
   "completedChallenges": 0,
-  "hasPassword": true
+  "hasPassword": true,
+  "token": null
 }
 ```
 
@@ -132,6 +143,8 @@ Cambia la contraseña del usuario autenticado. Body: `{"currentPassword": "...",
 - `country`: 2-56 caracteres
 - `email`: formato válido
 - `betaTester`: **opcional**, sin validación — si no se envía (o se envía `null`), el usuario queda con `betaTester: false` (default de `User`). Se guarda directo, sin pasar por ningún endpoint aparte.
+
+> ✅ **Corregido**: `username` y `email` duplicados se revisan **los dos siempre**, en la misma request — antes cortaba en el primero que fallara (nunca llegaba a revisar el segundo) y la excepción salía sin capturar como `500 "Internal error: ..."`. Ahora responde `400` con un mapa que trae **solo** las claves que realmente están repetidas: `{"username": "El nombre de usuario ya está en uso."}`, `{"email": "El correo electrónico ya está en uso."}`, o ambas juntas si los dos coinciden con una cuenta existente — mismo formato que el resto de errores de `@Valid`. Verificado en vivo los tres casos (solo username, solo email, ambos). `POST /auth/register-admin` reutiliza la misma validación de `registerUser` (se sacó un chequeo redundante que antes solo miraba `username` y tiraba `500`).
 
 > ⚠️ **Login requiere `username`, no `email`.** El body de `/auth/login` es `{"username","password"}` — no existe login por email en el backend (`CustomUserDetailsService` busca únicamente por username). Si el formulario de frontend pide "correo", hay que mapearlo al campo `username` al enviarlo, o el login siempre devuelve 401.
 
@@ -194,7 +207,10 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
   "publicationDate": "2026-01-01",
   "language": "es",
   "URLImage": "http://example.com/img.png",
-  "characteristics": ["Multijugador", "4K"]
+  "characteristics": ["Multijugador", "4K"],
+  "screenshots": ["http://example.com/screenshot1.png", "http://example.com/screenshot2.png"],
+  "minimumRequirements": ["SO: Windows 10 · 64 bits", "Procesador: Intel Core i3", "Memoria: 4 GB RAM", "Almacenamiento: 8 GB disponibles"],
+  "recommendedRequirements": ["SO: Windows 10/11 · 64 bits", "Procesador: Intel Core i5", "Memoria: 8 GB RAM", "Almacenamiento: 8 GB disponibles"]
 }
 ```
 
@@ -211,11 +227,16 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
   "language": "es",
   "deleted": false,
   "characteristics": ["Multijugador", "4K"],
+  "screenshots": ["http://example.com/screenshot1.png", "http://example.com/screenshot2.png"],
+  "minimumRequirements": ["SO: Windows 10 · 64 bits", "Procesador: Intel Core i3", "Memoria: 4 GB RAM", "Almacenamiento: 8 GB disponibles"],
+  "recommendedRequirements": ["SO: Windows 10/11 · 64 bits", "Procesador: Intel Core i5", "Memoria: 8 GB RAM", "Almacenamiento: 8 GB disponibles"],
   "URLImage": "http://example.com/img.png"
 }
 ```
 
 > ⚠️ El campo se llama exactamente `URLImage` (mayúsculas tal cual) tanto para enviar como para leer — no `urlImage` ni `urlimage`. Mandarlo con otra capitalización hace que el backend lo reciba como `null` sin ningún error.
+>
+> `screenshots`, `minimumRequirements` y `recommendedRequirements` son listas de texto libre (`List<String>`), igual que `characteristics` — cada una se persiste en su propia tabla hija (`expansion_pack_screenshots`, `expansion_pack_min_requirements`, `expansion_pack_rec_requirements`).
 
 ---
 

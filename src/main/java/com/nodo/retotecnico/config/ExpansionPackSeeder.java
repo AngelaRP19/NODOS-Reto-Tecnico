@@ -15,6 +15,20 @@ public class ExpansionPackSeeder implements CommandLineRunner {
     @Autowired
     private ExpansionPacksRepository expansionPacksRepository;
 
+    private static final List<String> MINIMUM_REQUIREMENTS = List.of(
+        "SO: Windows 10 · 64 bits",
+        "Procesador: Intel Core i3",
+        "Memoria: 4 GB RAM",
+        "Almacenamiento: 8 GB disponibles"
+    );
+
+    private static final List<String> RECOMMENDED_REQUIREMENTS = List.of(
+        "SO: Windows 10/11 · 64 bits",
+        "Procesador: Intel Core i5",
+        "Memoria: 8 GB RAM",
+        "Almacenamiento: 8 GB disponibles"
+    );
+
     @Override
     public void run(String... args) {
         if (expansionPacksRepository.count() > 0) {
@@ -120,6 +134,9 @@ public class ExpansionPackSeeder implements CommandLineRunner {
         expansionPack.setLanguage("es");
         expansionPack.setURLImage(urlImage);
         expansionPack.setCharacteristics(characteristics);
+        expansionPack.setScreenshots(List.of(urlImage));
+        expansionPack.setMinimumRequirements(MINIMUM_REQUIREMENTS);
+        expansionPack.setRecommendedRequirements(RECOMMENDED_REQUIREMENTS);
         return expansionPack;
     }
 }

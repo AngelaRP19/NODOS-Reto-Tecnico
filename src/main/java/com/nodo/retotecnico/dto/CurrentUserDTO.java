@@ -20,6 +20,9 @@ public class CurrentUserDTO {
     private Boolean betaTester;
     private Integer completedChallenges;
     private Boolean hasPassword;
+    // Solo se completa cuando PUT /auth/me cambia el username y hace falta un JWT nuevo
+    // (el token viejo queda con el username anterior como subject). Null en cualquier otro caso.
+    private String token;
 
     public static CurrentUserDTO fromUser(User user) {
         return new CurrentUserDTO(
@@ -32,7 +35,8 @@ public class CurrentUserDTO {
             user.getRole(),
             user.getBetaTester(),
             user.getCompletedChallenges(),
-            user.getPassword() != null && !user.getPassword().isEmpty()
+            user.getPassword() != null && !user.getPassword().isEmpty(),
+            null
         );
     }
 }

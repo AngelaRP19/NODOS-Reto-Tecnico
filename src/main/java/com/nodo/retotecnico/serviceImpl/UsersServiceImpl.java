@@ -1,7 +1,9 @@
 package com.nodo.retotecnico.serviceImpl;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.dto.RegisterRequest;
 import com.nodo.retotecnico.dto.UpdateProfileRequest;
+import com.nodo.retotecnico.exception.FieldValidationException;
 import com.nodo.retotecnico.model.PasswordResetToken;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.PasswordResetTokenRepository;
@@ -50,11 +53,15 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public Integer registerUser(RegisterRequest request) {
+        Map<String, String> errors = new HashMap<>();
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya está en uso.");
+            errors.put("username", "El nombre de usuario ya está en uso.");
         }
         if (request.getEmail() != null && userRepository.findByEmail(request.getEmail()) != null) {
-            throw new RuntimeException("El correo electrónico ya está en uso.");
+            errors.put("email", "El correo electrónico ya está en uso.");
+        }
+        if (!errors.isEmpty()) {
+            throw new FieldValidationException(errors);
         }
 
         User newUser = new User();
@@ -74,11 +81,7 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String registerAdmin(RegisterRequest request) {
-        var existing = userRepository.findByUsername(request.getUsername());
-        if (existing.isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya está en uso.");
-        }
-
+        // La unicidad de username/email ya la valida registerUser (400 + mapa de campos).
         registerUser(request);
         User createdUser = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Error creando usuario administrador"));
@@ -180,6 +183,13 @@ public class UsersServiceImpl implements UsersService {
     public User updateOwnProfile(Integer id, UpdateProfileRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getUsername().equals(request.getUsername())
+                && userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new FieldValidationException(Map.of("username", "El nombre de usuario ya está en uso."));
+        }
+
+        user.setUsername(request.getUsername());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());

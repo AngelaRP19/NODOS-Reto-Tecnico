@@ -66,6 +66,21 @@ public class ExpansionPack {
     @jakarta.persistence.Column(name = "characteristic")
     private List<String> characteristics = new ArrayList<>();
 
+    @ElementCollection
+    @CollectionTable(name = "expansion_pack_screenshots", joinColumns = @JoinColumn(name = "expansion_pack_id"))
+    @Column(name = "url")
+    private List<String> screenshots = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "expansion_pack_min_requirements", joinColumns = @JoinColumn(name = "expansion_pack_id"))
+    @Column(name = "requirement")
+    private List<String> minimumRequirements = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "expansion_pack_rec_requirements", joinColumns = @JoinColumn(name = "expansion_pack_id"))
+    @Column(name = "requirement")
+    private List<String> recommendedRequirements = new ArrayList<>();
+
     @JsonIgnore
     @OneToMany(mappedBy = "expansionPack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartDetails> cartDetails;
