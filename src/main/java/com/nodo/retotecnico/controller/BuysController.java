@@ -1,6 +1,8 @@
 package com.nodo.retotecnico.controller;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,7 @@ import com.nodo.retotecnico.model.Buy;
 import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.BuysService;
-import java.util.stream.Collectors;
+import com.nodo.retotecnico.service.LocalizedContentService;
 
 @RestController
 @RequestMapping("/nodos/buys")
@@ -32,17 +34,19 @@ public class BuysController {
 
     @Autowired
     private BuysService buysService;
-    
+
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private LocalizedContentService localizedContentService;
 
     private String getAuthenticatedUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new AccessDeniedException("Usuario no autenticado");
         }
-        
+
         Object principal = auth.getPrincipal();
         if (principal instanceof OAuth2User) {
             OAuth2User oauth2User = (OAuth2User) principal;
@@ -72,9 +76,9 @@ public class BuysController {
         if (buy == null) {
             throw new RuntimeException("Compra no encontrada");
         }
-        
+
         User currentUser = getAuthenticatedUserEntity();
-        
+
         // Validar que la compra pertenece al usuario autenticado
         if (!buy.getCart().getUser().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("No tienes permiso para acceder a esta compra");
@@ -88,40 +92,41 @@ public class BuysController {
 
     // Obtiene todas las compras del usuario autenticado
     @GetMapping
-    public List<BuyResponseDTO> getUserBuys() {
+    public List<BuyResponseDTO> getUserBuys(Locale locale) {
         User currentUser = getAuthenticatedUserEntity();
         return buysService.getBuysByUser(currentUser.getId()).stream()
-            .map(BuyResponseDTO::fromBuy)
-            .collect(Collectors.toList());
+                .map(buy -> BuyResponseDTO.fromBuy(buy, localizedContentService, locale))
+                .collect(Collectors.toList());
     }
 
     /**
      * Obtiene una compra específica del usuario
      */
     @GetMapping("/{id}")
-    public BuyResponseDTO getBuyById(@PathVariable Integer id) {
-        
+    public BuyResponseDTO getBuyById(@PathVariable Integer id, Locale locale) {
+
         Buy buy = buysService.getBuyById(id);
         if (buy == null) {
             throw new RuntimeException("Compra no encontrada");
         }
-        
+
         User currentUser = getAuthenticatedUserEntity();
-        
+
         // Validar que la compra pertenece al usuario autenticado
         if (!buy.getCart().getUser().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("No tienes permiso para ver esta compra");
         }
-        
-        return BuyResponseDTO.fromBuy(buy);
+
+        return BuyResponseDTO.fromBuy(buy, localizedContentService, locale);
     }
-    
+
     @PostMapping("/add")
     public Integer createBuy(@RequestBody Buy buy) {
         User currentUser = getAuthenticatedUserEntity();
-        // Here we could validate that the buy actually belongs to the currentUser's cart, etc...
-        // For simplicity we let the service do it or just allow if cart matches. 
-        if(buy.getCart() == null || buy.getCart().getUser().getId() != currentUser.getId()) {
+        // Here we could validate that the buy actually belongs to the currentUser's
+        // cart, etc...
+        // For simplicity we let the service do it or just allow if cart matches.
+        if (buy.getCart() == null || buy.getCart().getUser().getId() != currentUser.getId()) {
             throw new AccessDeniedException("The cart doesn't belong to the current user.");
         }
         return buysService.createBuy(buy);
@@ -136,28 +141,28 @@ public class BuysController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBuy(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteBuy(@PathVariable Integer id, Locale locale) {
         validateUserOwnsBuy(id);
         buysService.deleteBuy(id);
-        return ResponseEntity.ok("Buy deleted successfully");
+        return ResponseEntity
+                .ok(localizedContentService.getMessage("buy.delete.success", locale, "Buy deleted successfully"));
     }
 
     @PostMapping("/direct")
-    public BuyResponseDTO directBuy(@RequestBody DirectBuyRequest request) {
+    public BuyResponseDTO directBuy(@RequestBody DirectBuyRequest request, Locale locale) {
         User currentUser = getAuthenticatedUserEntity();
         Buy buy = buysService.createDirectBuy(
-            currentUser.getId(), 
-            request.getExpansionId(), 
-            request.getPlatformId(),
-            request.getPaymentMethod()
-        );
-        return BuyResponseDTO.fromBuy(buy);
+                currentUser.getId(),
+                request.getExpansionId(),
+                request.getPlatformId(),
+                request.getPaymentMethod());
+        return BuyResponseDTO.fromBuy(buy, localizedContentService, locale);
     }
 
     @PostMapping("/purchase")
-    public BuyResponseDTO purchaseFromCart(@RequestBody String paymentMethod) {
+    public BuyResponseDTO purchaseFromCart(@RequestBody String paymentMethod, Locale locale) {
         User currentUser = getAuthenticatedUserEntity();
         Buy buy = buysService.purchaseFromCart(currentUser.getId(), paymentMethod);
-        return BuyResponseDTO.fromBuy(buy);
+        return BuyResponseDTO.fromBuy(buy, localizedContentService, locale);
     }
 }

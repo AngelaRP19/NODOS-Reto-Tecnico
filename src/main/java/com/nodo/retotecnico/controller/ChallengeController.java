@@ -1,6 +1,8 @@
 package com.nodo.retotecnico.controller;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nodo.retotecnico.dto.ChallengeResponseDTO;
 import com.nodo.retotecnico.model.Challenge;
 import com.nodo.retotecnico.service.ChallengeService;
+import com.nodo.retotecnico.service.LocalizedContentService;
 
 @RestController
 @RequestMapping("/nodos/challenges")
@@ -23,14 +27,20 @@ public class ChallengeController {
     @Autowired
     private ChallengeService challengeService;
 
+    @Autowired
+    private LocalizedContentService localizedContentService;
+
     @GetMapping
-    public List<Challenge> getAllChallenges() {
-        return challengeService.getAllChallenges();
+    public List<ChallengeResponseDTO> getAllChallenges(Locale locale) {
+        return challengeService.getAllChallenges().stream()
+                .map(challenge -> localizedContentService.toResponseDto(challenge, locale))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public Challenge getChallengeById(@PathVariable Integer id) {
-        return challengeService.getChallengeById(id);
+    public ChallengeResponseDTO getChallengeById(@PathVariable Integer id, Locale locale) {
+        Challenge challenge = challengeService.getChallengeById(id);
+        return localizedContentService.toResponseDto(challenge, locale);
     }
 
     @PostMapping("/create")
@@ -44,8 +54,9 @@ public class ChallengeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteChallenge(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteChallenge(@PathVariable Integer id, Locale locale) {
         challengeService.deleteChallenge(id);
-        return ResponseEntity.ok("Challenge deleted successfully");
+        return ResponseEntity.ok(localizedContentService.getMessage("challenge.delete.success", locale,
+                "Challenge deleted successfully"));
     }
 }
