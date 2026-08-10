@@ -17,6 +17,8 @@ public interface  UsersService {
     void deleteUser(Integer id);
     User updateUserRole(Integer id, String role);
     void processOAuthPostLogin(String username, String email, String name, String firstName, String lastName);
+    void initiatePasswordReset(String email);
+    void resetPassword(String token, String newPassword);
     User updateBetaTester(Integer id, Boolean betaTester);
     Integer getCompletedChallenges(Integer id);
     User updateOwnProfile(Integer id, UpdateProfileRequest request);

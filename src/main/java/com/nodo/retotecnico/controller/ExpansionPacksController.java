@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.nodo.retotecnico.model.ExpansionPack;
 import com.nodo.retotecnico.service.ExpansionPacksService;
 
+import com.nodo.retotecnico.dto.PlatformSelectionDTO;
+
 @RestController
 @RequestMapping("/nodos/expansionpacks")
 public class ExpansionPacksController {
@@ -32,6 +34,11 @@ public class ExpansionPacksController {
     public ExpansionPack getExpansionPacksById(@PathVariable Integer id) {
         return expansionPacksService.getExpansionPacksById(id);
     }
+    /*Devuelve las plataformas disponibles para una expansión.*/
+    @GetMapping("/{id}/platforms")
+    public List<PlatformSelectionDTO> getPlatformsByExpansion(@PathVariable Integer id) {
+        return expansionPacksService.getPlatformsByExpansion(id);
+    }
     @PostMapping("/create")
     public Integer createExpansionPack(@RequestBody ExpansionPack expansionPack) {
         return expansionPacksService.createExpansionPack(expansionPack);
@@ -46,4 +53,6 @@ public class ExpansionPacksController {
         expansionPacksService.deleteExpansionPack(id);
         return ResponseEntity.ok("Expansion Pack deleted successfully");
     }
+
+
 }

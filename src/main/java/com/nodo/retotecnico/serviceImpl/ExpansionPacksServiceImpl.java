@@ -9,6 +9,11 @@ import com.nodo.retotecnico.model.ExpansionPack;
 import com.nodo.retotecnico.repository.ExpansionPacksRepository;
 import com.nodo.retotecnico.service.ExpansionPacksService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import com.nodo.retotecnico.dto.PlatformSelectionDTO;
+
 
 @Service
 public class ExpansionPacksServiceImpl implements ExpansionPacksService{
@@ -42,6 +47,9 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
         existingExpansionPack.setLanguage(expansionPack.getLanguage());
         existingExpansionPack.setURLImage(expansionPack.getURLImage());
         existingExpansionPack.setCharacteristics(expansionPack.getCharacteristics());
+        existingExpansionPack.setScreenshots(expansionPack.getScreenshots());
+        existingExpansionPack.setMinimumRequirements(expansionPack.getMinimumRequirements());
+        existingExpansionPack.setRecommendedRequirements(expansionPack.getRecommendedRequirements());
         return expansionPacksRepository.save(existingExpansionPack);
     }
 
@@ -51,5 +59,56 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
                 .orElseThrow(() -> new RuntimeException("ExpansionPack not found"));
         expansionPacksRepository.deleteById(id);
     }
+
+    /* Construye la lista de plataformas disponibles para una expansión.*/
+@Override
+public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId) {
+
+    ExpansionPack expansion = expansionPacksRepository.findById(expansionId)
+            .orElseThrow(() -> new RuntimeException("Expansion Pack not found"));
+
+    List<PlatformSelectionDTO> result = new ArrayList<>();
+
+    if (expansion.getPlatforms() == null || expansion.getPlatforms().isBlank()) {
+        return result;
+    }
+
+    List<String> platforms = Arrays.stream(expansion.getPlatforms().split("/"))
+            .map(String::trim)
+            .toList();
+
+    for (String platform : platforms) {
+
+        String label;
+
+        switch (platform.toLowerCase()) {
+
+            case "steam":
+                label = "Continuar a la tienda de Steam";
+                break;
+
+            case "pc":
+            case "windows":
+                label = "Comprar para Windows";
+                break;
+
+            case "mac":
+                label = "Comprar para Mac";
+                break;
+
+            case "movil":
+            case "móvil":
+                label = "Comprar para Móvil";
+                break;
+
+            default:
+                label = "Comprar para " + platform;
+        }
+
+        result.add(new PlatformSelectionDTO(platform, label));
+    }
+
+    return result;
+}
 }
 
