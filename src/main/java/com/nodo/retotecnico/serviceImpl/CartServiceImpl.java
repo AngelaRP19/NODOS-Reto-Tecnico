@@ -57,6 +57,27 @@ public class CartServiceImpl implements CartService {
         Platform platform = platformsRepository.findById(platformId)
                 .orElseThrow(() -> new RuntimeException("Platform not found"));
 
+/*Valida que la plataforma seleccionada esté disponible para la expansión.*/
+    if (expansion.getPlatforms() != null) {
+
+        boolean validPlatform = false;
+
+        String[] availablePlatforms = expansion.getPlatforms().split("/");
+
+        for (String available : availablePlatforms) {
+
+        if (available.trim().equalsIgnoreCase(platform.getName())) {
+            validPlatform = true;
+            break;
+        }
+    }
+
+    if (!validPlatform) {
+        throw new RuntimeException(
+                "La plataforma seleccionada no está disponible para esta expansión.");
+    }
+    }
+
         cart.addExpansion(expansion, platform); // recalcula dentro de Cart
         return cartRepository.save(cart);
     }
