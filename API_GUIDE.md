@@ -192,6 +192,7 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
 |---|---|---|---|
 | GET | `/nodos/expansionpacks` | — | `200` + lista de packs |
 | GET | `/nodos/expansionpacks/{id}` | — | `200` + pack |
+| GET | `/nodos/expansionpacks/{id}/platforms` | — | `200` + lista de plataformas disponibles (ver abajo) |
 | POST | `/nodos/expansionpacks/create` | ver campos abajo | `200` + `id` numérico |
 | PUT | `/nodos/expansionpacks/{id}` | ver campos abajo | `200` + pack actualizado |
 | DELETE | `/nodos/expansionpacks/{id}` | — | `200` + `"Expansion Pack deleted successfully"` |
@@ -237,6 +238,19 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
 > ⚠️ El campo se llama exactamente `URLImage` (mayúsculas tal cual) tanto para enviar como para leer — no `urlImage` ni `urlimage`. Mandarlo con otra capitalización hace que el backend lo reciba como `null` sin ningún error.
 >
 > `screenshots`, `minimumRequirements` y `recommendedRequirements` son listas de texto libre (`List<String>`), igual que `characteristics` — cada una se persiste en su propia tabla hija (`expansion_pack_screenshots`, `expansion_pack_min_requirements`, `expansion_pack_rec_requirements`).
+
+### `GET /nodos/expansionpacks/{id}/platforms`
+
+Deriva la lista de plataformas disponibles a partir del campo `platforms` del pack (string separado por `/`, ej. `"PC / Mac / Consolas"`), pensado para que el frontend arme el selector de plataforma antes de agregar la expansión al carrito. Cada plataforma trae una `label` amigable ya traducida; si el nombre no matchea ninguno de los casos conocidos (`steam`, `pc`/`windows`, `mac`, `movil`/`móvil`), cae en el genérico `"Comprar para <plataforma>"`.
+
+**Respuesta real**:
+```json
+[
+  {"name": "PC", "label": "Comprar para Windows"},
+  {"name": "Mac", "label": "Comprar para Mac"},
+  {"name": "Consolas", "label": "Comprar para Consolas"}
+]
+```
 
 ---
 
@@ -310,7 +324,7 @@ Relaciona un `User` con un `Challenge` (tabla `subscription_challenge`). Requier
 | Método | Ruta | Params/Body | Respuesta |
 |---|---|---|---|
 | GET | `/nodos/cart` | — | `200` + `CartResponseDTO` (ver abajo) |
-| POST | `/nodos/cart/add` | **query params** `expansionId`, `platformId` (no JSON body) | `200` + carrito actualizado |
+| POST | `/nodos/cart/add` | **query params** `expansionId`, `platformId` (no JSON body) | `200` + carrito actualizado, o `500` si `platformId` no está entre las plataformas del pack (ver nota abajo) |
 | POST | `/nodos/cart/remove` | **query param** `expansionId` | `200` + carrito actualizado |
 | POST | `/nodos/cart/clear` | — | `200`, sin contenido |
 
@@ -326,6 +340,8 @@ Relaciona un `User` con un `Challenge` (tabla `subscription_challenge`). Requier
   "total": 25.5
 }
 ```
+
+> ⚠️ `POST /nodos/cart/add` valida que `platformId` corresponda a una plataforma listada en el campo `platforms` del pack (comparación case-insensitive contra cada segmento separado por `/`). Si no matchea, tira `RuntimeException` → **500** `"Internal error: La plataforma seleccionada no está disponible para esta expansión."` (mismo formato genérico de error no controlado, ver tabla de "Formato de errores" al inicio). Usar `GET /nodos/expansionpacks/{id}/platforms` para saber de antemano qué `platformId` son válidos para un pack.
 
 ---
 
