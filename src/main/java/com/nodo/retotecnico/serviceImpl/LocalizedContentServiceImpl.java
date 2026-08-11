@@ -27,18 +27,30 @@ public class LocalizedContentServiceImpl implements LocalizedContentService {
 
     static {
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Naturaleza Encantada", "expansionpack.enchanted");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Enchanted Nature", "expansionpack.enchanted");
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Dinastías y Linajes", "expansionpack.legacy");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Royal Dynasty", "expansionpack.legacy");
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Rancho de Caballos", "expansionpack.horse_ranch");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Horse Ranch", "expansionpack.horse_ranch");
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Vida en el Pueblo", "expansionpack.cottage_living");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Cottage Living", "expansionpack.cottage_living");
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Perros y Gatos", "expansionpack.cats_dogs");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Cats & Dogs", "expansionpack.cats_dogs");
         EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: ¡A Trabajar!", "expansionpack.get_to_work");
+        EXPANSION_PACK_KEY_MAP.put("The Sims™ 4: Get to Work", "expansionpack.get_to_work");
 
         CHALLENGE_KEY_MAP.put("Reto: Jardín Encantado", "challenge.enchanted_garden");
+        CHALLENGE_KEY_MAP.put("Challenge: Enchanted Garden", "challenge.enchanted_garden");
         CHALLENGE_KEY_MAP.put("Reto: Dinastía Real", "challenge.royal_dynasty");
+        CHALLENGE_KEY_MAP.put("Challenge: Royal Dynasty", "challenge.royal_dynasty");
         CHALLENGE_KEY_MAP.put("Reto: Rancho Perfecto", "challenge.perfect_ranch");
+        CHALLENGE_KEY_MAP.put("Challenge: Perfect Ranch", "challenge.perfect_ranch");
         CHALLENGE_KEY_MAP.put("Reto: Vida de Pueblo", "challenge.cottage_life");
+        CHALLENGE_KEY_MAP.put("Challenge: Cottage Life", "challenge.cottage_life");
         CHALLENGE_KEY_MAP.put("Reto: Refugio de Mascotas", "challenge.pet_shelter");
+        CHALLENGE_KEY_MAP.put("Challenge: Pet Shelter", "challenge.pet_shelter");
         CHALLENGE_KEY_MAP.put("Reto: Emprendedor Simmer", "challenge.simmer_entrepreneur");
+        CHALLENGE_KEY_MAP.put("Challenge: Simmer Entrepreneur", "challenge.simmer_entrepreneur");
     }
 
     @Override

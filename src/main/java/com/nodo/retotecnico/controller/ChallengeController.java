@@ -32,7 +32,7 @@ public class ChallengeController {
 
     @GetMapping
     public List<ChallengeResponseDTO> getAllChallenges(Locale locale) {
-        return challengeService.getAllChallenges().stream()
+        return challengeService.getAllChallenges(locale.getLanguage()).stream()
                 .map(challenge -> localizedContentService.toResponseDto(challenge, locale))
                 .collect(Collectors.toList());
     }

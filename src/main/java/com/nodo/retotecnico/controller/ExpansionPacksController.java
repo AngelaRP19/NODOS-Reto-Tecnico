@@ -32,7 +32,7 @@ public class ExpansionPacksController {
 
     @GetMapping
     public List<ExpansionPackResponseDTO> getAllExpansionPacks(Locale locale) {
-        return expansionPacksService.getAllExpansionPacks().stream()
+        return expansionPacksService.getAllExpansionPacks(locale.getLanguage()).stream()
                 .map(pack -> localizedContentService.toResponseDto(pack, locale))
                 .collect(Collectors.toList());
     }

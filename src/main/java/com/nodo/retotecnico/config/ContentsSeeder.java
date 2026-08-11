@@ -44,22 +44,21 @@ public class ContentsSeeder implements CommandLineRunner {
 
         if (!registerSeeded) {
             fieldsToSave.addAll(List.of(
-                field(SECTION_REGISTER, "Nombre", "firstName", "TEXT", true, "", 1),
-                field(SECTION_REGISTER, "Apellido", "lastName", "TEXT", true, "", 2),
-                field(SECTION_REGISTER, "Usuario", "username", "TEXT", true, "", 3),
-                field(SECTION_REGISTER, "Correo electrónico", "email", "EMAIL", true, "", 4),
-                field(SECTION_REGISTER, "País", "country", "SELECT", true,
-                    "Colombia,México,Argentina,Chile,Perú,España", 5),
-                field(SECTION_REGISTER, "Contraseña", "password", "PASSWORD", true, "", 6),
-                field(SECTION_REGISTER, "Confirmar contraseña", "confirmPassword", "PASSWORD", true, "", 7)
-            ));
+                    field(SECTION_REGISTER, "content.register.firstName.title", "firstName", "TEXT", true, "", 1),
+                    field(SECTION_REGISTER, "content.register.lastName.title", "lastName", "TEXT", true, "", 2),
+                    field(SECTION_REGISTER, "content.register.username.title", "username", "TEXT", true, "", 3),
+                    field(SECTION_REGISTER, "content.register.email.title", "email", "EMAIL", true, "", 4),
+                    field(SECTION_REGISTER, "content.register.country.title", "country", "SELECT", true,
+                            "content.register.country.options", 5),
+                    field(SECTION_REGISTER, "content.register.password.title", "password", "PASSWORD", true, "", 6),
+                    field(SECTION_REGISTER, "content.register.confirmPassword.title", "confirmPassword", "PASSWORD",
+                            true, "", 7)));
         }
 
         if (!loginSeeded) {
             fieldsToSave.addAll(List.of(
-                field(SECTION_LOGIN, "Usuario", "username", "TEXT", true, "", 1),
-                field(SECTION_LOGIN, "Contraseña", "password", "PASSWORD", true, "", 2)
-            ));
+                    field(SECTION_LOGIN, "content.login.username.title", "username", "TEXT", true, "", 1),
+                    field(SECTION_LOGIN, "content.login.password.title", "password", "PASSWORD", true, "", 2)));
         }
 
         if (!fieldsToSave.isEmpty()) {
@@ -68,7 +67,7 @@ public class ContentsSeeder implements CommandLineRunner {
     }
 
     private Content field(String section, String title, String fieldName, String fieldType,
-                           boolean required, String options, int displayOrder) {
+            boolean required, String options, int displayOrder) {
         Content content = new Content();
         content.setSection(section);
         content.setTitle(title);
