@@ -14,28 +14,29 @@ import java.util.Arrays;
 
 import com.nodo.retotecnico.dto.PlatformSelectionDTO;
 
-
 @Service
-public class ExpansionPacksServiceImpl implements ExpansionPacksService{
+public class ExpansionPacksServiceImpl implements ExpansionPacksService {
 
     @Autowired
     private ExpansionPacksRepository expansionPacksRepository;
 
     @Override
-    public List<ExpansionPack> getAllExpansionPacks() {
-        return expansionPacksRepository.findAll();
+    public List<ExpansionPack> getAllExpansionPacks(String language) {
+        return expansionPacksRepository.findByLanguage(language);
     }
 
     @Override
     public ExpansionPack getExpansionPacksById(Integer id) {
         return expansionPacksRepository.findById(id).orElse(null);
     }
+
     @Override
     public Integer createExpansionPack(ExpansionPack expansionPack) {
         return expansionPacksRepository.save(expansionPack).getId();
     }
+
     @Override
-    public ExpansionPack updateExpansionPack(Integer id, ExpansionPack expansionPack){
+    public ExpansionPack updateExpansionPack(Integer id, ExpansionPack expansionPack) {
         ExpansionPack existingExpansionPack = expansionPacksRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ExpansionPack not found"));
         existingExpansionPack.setName(expansionPack.getName());
@@ -54,7 +55,7 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService{
     }
 
     @Override
-    public void deleteExpansionPack(Integer id){
+    public void deleteExpansionPack(Integer id) {
         ExpansionPack existingExpansionPack = expansionPacksRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ExpansionPack not found"));
         expansionPacksRepository.deleteById(id);
@@ -111,4 +112,3 @@ public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId) {
     return result;
 }
 }
-

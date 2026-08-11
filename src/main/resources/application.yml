@@ -2,8 +2,7 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
-  web:
-    
+  mvc:
     locale-resolver: accept-header
   application:
     name: reto-tecenico

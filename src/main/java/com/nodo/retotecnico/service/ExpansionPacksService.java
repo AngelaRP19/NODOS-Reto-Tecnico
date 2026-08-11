@@ -8,10 +8,14 @@ import com.nodo.retotecnico.dto.PlatformSelectionDTO;
 
 public interface ExpansionPacksService {
 
-    List<ExpansionPack> getAllExpansionPacks();
+    List<ExpansionPack> getAllExpansionPacks(String language);
+
     ExpansionPack getExpansionPacksById(Integer id);
+
     Integer createExpansionPack(ExpansionPack expansionPack);
+
     ExpansionPack updateExpansionPack(Integer id, ExpansionPack expansionPack);
+
     void deleteExpansionPack(Integer id);
     /*Devuelve las plataformas disponibles para una expansión.*/
 List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId);
