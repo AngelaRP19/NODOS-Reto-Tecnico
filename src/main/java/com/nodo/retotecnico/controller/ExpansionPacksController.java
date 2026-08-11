@@ -20,6 +20,8 @@ import com.nodo.retotecnico.model.ExpansionPack;
 import com.nodo.retotecnico.service.ExpansionPacksService;
 import com.nodo.retotecnico.service.LocalizedContentService;
 
+import com.nodo.retotecnico.dto.PlatformSelectionDTO;
+
 @RestController
 @RequestMapping("/nodos/expansionpacks")
 public class ExpansionPacksController {
@@ -42,6 +44,11 @@ public class ExpansionPacksController {
         ExpansionPack pack = expansionPacksService.getExpansionPacksById(id);
         return localizedContentService.toResponseDto(pack, locale);
     }
+    /*Devuelve las plataformas disponibles para una expansión.*/
+    @GetMapping("/{id}/platforms")
+    public List<PlatformSelectionDTO> getPlatformsByExpansion(@PathVariable Integer id) {
+        return expansionPacksService.getPlatformsByExpansion(id);
+    }
 
     @PostMapping("/create")
     public Integer createExpansionPack(@RequestBody ExpansionPack expansionPack) {
@@ -60,4 +67,6 @@ public class ExpansionPacksController {
         return ResponseEntity.ok(localizedContentService.getMessage("expansionpack.delete.success", locale,
                 "Expansion pack deleted successfully"));
     }
+
+
 }
