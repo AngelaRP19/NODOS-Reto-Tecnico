@@ -45,6 +45,8 @@ Referencia completa de endpoints para integrar el frontend (`http://localhost:51
 | GET | `/auth/oauth2/success` | — (requiere sesión OAuth2 activa) | `{"token","message","provider","email","name"}` |
 | GET | `/oauth2/authorization/google` | — | 302 redirect a Google |
 | GET | `/oauth2/authorization/meta` | — | 302 redirect a Facebook |
+| POST | `/auth/forgot-password` | `{"email"}` | `200` + `"Correo de recuperación enviado si el usuario existe."` (siempre, exista o no el email — no filtra qué emails están registrados) |
+| POST | `/auth/reset-password` | `{"token","newPassword"}` | `200` + `"Contraseña actualizada correctamente."`, o `500` si el token no existe/ya se usó/expiró |
 
 Tras un login OAuth2 exitoso, Spring redirige directo al **frontend** (no a `/auth/oauth2/success`), a la URL configurada en la variable de entorno `FRONTEND_URL` (`application.yml` → `frontend.url: ${FRONTEND_URL:http://localhost:5173/}`). Si el frontend corre en otro puerto/dominio, hay que actualizar `FRONTEND_URL` en `.env`.
 
@@ -122,6 +124,8 @@ Permite que **cualquier usuario autenticado** active o cancele su propia inscrip
 ```
 
 > Este endpoint es distinto de `PUT /nodos/users/{id}/betatester` (que sigue existiendo, sin cambios, y sigue siendo **ADMIN-only** — pensado para que un admin fuerce el valor en cualquier usuario por su `id`). `PUT /auth/me/betatester` es el equivalente de autoservicio: solo puede cambiar el `betaTester` del usuario dueño del token, nunca el de otro. Verificado en vivo que ambos coexisten sin pisarse: un usuario normal recibe `403` al intentar `PUT /nodos/users/{id}/betatester` (regla de `SecurityConfig` por rol), pero `200` en `PUT /auth/me/betatester`.
+>
+> ✉️ Si este request hace pasar `betaTester` de `false`/sin valor a `true`, se dispara un correo de bienvenida a beta testing (Resend) al email del usuario — no se reenvía en llamadas repetidas con `true` (solo cuando efectivamente cambia el valor). Igual que el resto de los correos de esta API, un fallo de Resend no afecta la respuesta `200`.
 
 ### `PUT /auth/me/password`
 
@@ -135,6 +139,8 @@ Cambia la contraseña del usuario autenticado. Body: `{"currentPassword": "...",
 **Respuesta real** (`CurrentUserDTO` actualizado, mismo shape que `GET /auth/me` — incluye `hasPassword: true` una vez seteada la contraseña).
 
 > Verificado en vivo (caso "usuario con contraseña"): `currentPassword` incorrecta o ausente → `401`; `currentPassword` correcta → `200` y la nueva contraseña ya sirve para `POST /auth/login`. El caso "usuario sin contraseña" (cuenta 100% OAuth2) se validó por lectura de código, no en vivo — requeriría un login real por Google/Meta para generar esa cuenta, que no es reproducible por curl en este entorno; la lógica es simétrica y usa el mismo booleano `hasPassword` ya verificado en `GET /auth/me`.
+>
+> ✉️ Cada cambio de contraseña exitoso por este endpoint dispara un correo de aviso de seguridad (Resend) al email del usuario ("tu contraseña fue actualizada, si no fuiste vos contactanos"). Mismo correo que dispara `POST /auth/reset-password` (ver esa sección) — cualquiera de los dos caminos para cambiar la contraseña termina avisando al dueño de la cuenta. Un fallo de Resend no afecta la respuesta `200`.
 
 **Validaciones de `/auth/register`** (400 si fallan, un mensaje por campo):
 - `username`: 3-30 caracteres, solo letras/números/`_`
@@ -144,9 +150,22 @@ Cambia la contraseña del usuario autenticado. Body: `{"currentPassword": "...",
 - `email`: formato válido
 - `betaTester`: **opcional**, sin validación — si no se envía (o se envía `null`), el usuario queda con `betaTester: false` (default de `User`). Se guarda directo, sin pasar por ningún endpoint aparte.
 
+> ✉️ `POST /auth/register` siempre dispara un correo de bienvenida (Resend) al email registrado. Si además `betaTester` se mandó en `true`, dispara **también** el correo de bienvenida a beta testing (el mismo que dispara `PUT /auth/me/betatester`, ver esa sección). Ninguno de los dos bloquea la respuesta si Resend falla.
+
 > ✅ **Corregido**: `username` y `email` duplicados se revisan **los dos siempre**, en la misma request — antes cortaba en el primero que fallara (nunca llegaba a revisar el segundo) y la excepción salía sin capturar como `500 "Internal error: ..."`. Ahora responde `400` con un mapa que trae **solo** las claves que realmente están repetidas: `{"username": "El nombre de usuario ya está en uso."}`, `{"email": "El correo electrónico ya está en uso."}`, o ambas juntas si los dos coinciden con una cuenta existente — mismo formato que el resto de errores de `@Valid`. Verificado en vivo los tres casos (solo username, solo email, ambos). `POST /auth/register-admin` reutiliza la misma validación de `registerUser` (se sacó un chequeo redundante que antes solo miraba `username` y tiraba `500`).
 
 > ⚠️ **Login requiere `username`, no `email`.** El body de `/auth/login` es `{"username","password"}` — no existe login por email en el backend (`CustomUserDetailsService` busca únicamente por username). Si el formulario de frontend pide "correo", hay que mapearlo al campo `username` al enviarlo, o el login siempre devuelve 401.
+
+### `POST /auth/forgot-password` y `POST /auth/reset-password`
+
+Recuperación de contraseña en dos pasos, sin autenticación (público). Existían en el backend pero no estaban documentados acá.
+
+1. **`POST /auth/forgot-password`** — body `{"email": "usuario@ejemplo.com"}`. Si el email pertenece a un usuario registrado, genera un token (`UUID` aleatorio), lo guarda con vencimiento de **1 hora**, y dispara un correo (Resend) con un link `https://tuapp.com/reset-password?token=<uuid>` para restablecer la contraseña. La respuesta es **siempre** `200` con el mismo mensaje genérico, exista o no el email — así no se puede usar este endpoint para averiguar qué correos están registrados.
+2. **`POST /auth/reset-password`** — body `{"token": "<uuid recibido por correo>", "newPassword": "..."}`. Si el token existe (`findByToken`), actualiza la contraseña del usuario dueño de ese token y **borra el token** (de un solo uso). Si el token no existe (nunca se pidió, ya se usó, o no coincide), tira `RuntimeException("Token inválido o expirado")` → **500** `"Internal error: Token inválido o expirado"` (mismo formato genérico de error no controlado — no hay un chequeo explícito de expiración en el código, un token vencido simplemente sigue siendo válido si todavía existe en la tabla, ya que nada lo borra automáticamente al vencer).
+
+> ⚠️ `newPassword` en `POST /auth/reset-password` **no pasa por `@Valid`** (el endpoint recibe `Map<String, String>`, no un DTO) — a diferencia de `PUT /auth/me/password`, acá no se valida el formato de la contraseña nueva (largo, mayúscula/minúscula/número/carácter especial). Cualquier string no vacío se acepta.
+>
+> ✉️ `POST /auth/reset-password` exitoso dispara el mismo correo de aviso de seguridad que `PUT /auth/me/password` ("tu contraseña fue actualizada"). Un fallo de Resend no afecta la respuesta `200`.
 
 ---
 
@@ -373,6 +392,8 @@ Relaciona un `User` con un `Challenge` (tabla `subscription_challenge`). Requier
 > ⚠️ **`PUT /nodos/buys/{id}` exige mandar `cart.id` explícitamente en el body**, o el update falla con 500 por violar la restricción `NOT NULL` de `cart_id` (`BuysServiceImpl.updateBuy` sobreescribe el `cart` existente con lo que venga en el request, incluso si viene vacío). Esta ruta devuelve la entidad `Buy` cruda (no un DTO); el riesgo de recursión infinita que tenía esta ruta a través de `Cart.details` ya se corrigió en esta sesión (ver nota de Platform).
 >
 > Confirmado en vivo: `getAuthenticatedUsername()` en `BuysController` sí soporta tokens JWT normales (no solo sesiones OAuth2) — busca al usuario por email y si no lo encuentra, por username. Ya no aplica una limitación vieja que aparecía en documentación anterior del proyecto.
+>
+> ✉️ Toda compra completada por `POST /nodos/buys/purchase` o `POST /nodos/buys/direct` dispara un correo de confirmación (Resend) al email del comprador, con el detalle de los items (`nombre del pack (plataforma) x cantidad`), el método de pago y el total. `PUT /nodos/buys/{id}` (edición manual) y `POST /nodos/buys/add` **no** disparan este correo — solo las dos rutas que representan una compra real. Un fallo de Resend no afecta la respuesta `200`.
 
 ---
 

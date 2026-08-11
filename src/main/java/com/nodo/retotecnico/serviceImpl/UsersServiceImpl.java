@@ -76,7 +76,16 @@ public class UsersServiceImpl implements UsersService {
         newUser.setEmail(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com");
         newUser.setBetaTester(request.getBetaTester() != null ? request.getBetaTester() : false);
 
-        return userRepository.save(newUser).getId();
+        Integer newUserId = userRepository.save(newUser).getId();
+        if (Boolean.TRUE.equals(newUser.getBetaTester())) {
+            try {
+                emailService.sendBetaTesterWelcomeEmail(newUser.getEmail(), newUser.getUsername());
+            } catch (Exception e) {
+                // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar el registro.
+                e.printStackTrace();
+            }
+        }
+        return newUserId;
     }
 
     @Override
@@ -162,14 +171,30 @@ public class UsersServiceImpl implements UsersService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetTokenRepository.delete(resetToken);
+        try {
+            emailService.sendPasswordChangedEmail(user.getEmail(), user.getUsername());
+        } catch (Exception e) {
+            // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar el reset de contraseña.
+            e.printStackTrace();
+        }
     }
 
     @Override
     public User updateBetaTester(Integer id, Boolean betaTester) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean wasBetaTester = Boolean.TRUE.equals(user.getBetaTester());
         user.setBetaTester(betaTester);
-        return userRepository.save(user);
+        User updated = userRepository.save(user);
+        if (!wasBetaTester && Boolean.TRUE.equals(betaTester)) {
+            try {
+                emailService.sendBetaTesterWelcomeEmail(updated.getEmail(), updated.getUsername());
+            } catch (Exception e) {
+                // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar la actualización.
+                e.printStackTrace();
+            }
+        }
+        return updated;
     }
 
     @Override
@@ -213,7 +238,14 @@ public class UsersServiceImpl implements UsersService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        return userRepository.save(user);
+        User updated = userRepository.save(user);
+        try {
+            emailService.sendPasswordChangedEmail(updated.getEmail(), updated.getUsername());
+        } catch (Exception e) {
+            // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar el cambio de contraseña.
+            e.printStackTrace();
+        }
+        return updated;
     }
 }
 

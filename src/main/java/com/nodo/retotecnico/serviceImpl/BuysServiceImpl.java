@@ -19,6 +19,9 @@ import com.nodo.retotecnico.repository.ExpansionPacksRepository;
 import com.nodo.retotecnico.repository.PlatformsRepository;
 import com.nodo.retotecnico.repository.UserRepository;
 import com.nodo.retotecnico.service.BuysService;
+import com.nodo.retotecnico.service.EmailService;
+
+import java.util.stream.Collectors;
 
 @Service
 public class BuysServiceImpl implements BuysService{
@@ -39,6 +42,9 @@ public class BuysServiceImpl implements BuysService{
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public List<Buy> getAllBuys() { 
@@ -120,8 +126,10 @@ public class BuysServiceImpl implements BuysService{
         buy.setTotalPrice(expansion.getPrice());
         buy.setPaymentMethod(paymentMethod);
         buy.setStatus("completado");
-        
-        return buysRepository.save(buy);
+
+        Buy savedBuy = buysRepository.save(buy);
+        sendPurchaseConfirmation(user, savedBuy);
+        return savedBuy;
     }
 
     @Override
@@ -156,12 +164,29 @@ public class BuysServiceImpl implements BuysService{
         newCart.setTotal(0.0);
         cartRepository.save(newCart);
 
+        sendPurchaseConfirmation(user, savedBuy);
         return savedBuy;
     }
 
     private void validateUserCanPurchase(User user) {
         if (user.getRole() != null && ADMIN_ROLE.equalsIgnoreCase(user.getRole())) {
             throw new AccessDeniedException("Admin users cannot make purchases");
+        }
+    }
+
+    private void sendPurchaseConfirmation(User user, Buy buy) {
+        try {
+            List<String> itemLines = buy.getCart().getDetails().stream()
+                    .map(detail -> "%s (%s) x%d".formatted(
+                            detail.getExpansionPack().getName(),
+                            detail.getPlatform().getName(),
+                            detail.getQuantity()))
+                    .collect(Collectors.toList());
+            emailService.sendPurchaseConfirmationEmail(user.getEmail(), user.getUsername(), itemLines,
+                    buy.getTotalPrice(), buy.getPaymentMethod(), buy.getPurchaseDate());
+        } catch (Exception e) {
+            // Un fallo del proveedor de email (ej. Resend sin configurar) no debe tumbar la compra.
+            e.printStackTrace();
         }
     }
 }
