@@ -4,7 +4,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class EmailService {
@@ -101,5 +106,110 @@ public class EmailService {
             """.formatted(resetLink);
 
         sendEmail(to, "Recuperación de contraseña", htmlContent);
+    }
+
+    // Correo de bienvenida a beta testing
+    public void sendBetaTesterWelcomeEmail(String to, String username) {
+        String htmlContent = """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+              <meta charset="UTF-8">
+              <title>¡Ya sos beta tester!</title>
+              <style>
+                body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; padding: 20px; }
+                h1 { color: #2c3e50; }
+                p { font-size: 16px; color: #555; }
+                .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>¡Gracias por sumarte, %s!</h1>
+                <p>Quedaste inscripto como <strong>beta tester</strong> de la comunidad de Los Sims 4 🧪.</p>
+                <p>Vas a tener acceso anticipado a nuevas funciones antes que el resto. ¡Gracias por ayudarnos a mejorar!</p>
+                <div class="footer">
+                  <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(username);
+
+        sendEmail(to, "¡Ya sos beta tester!", htmlContent);
+    }
+
+    // Correo de aviso de cambio de contraseña
+    public void sendPasswordChangedEmail(String to, String username) {
+        String htmlContent = """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+              <meta charset="UTF-8">
+              <title>Tu contraseña fue actualizada</title>
+              <style>
+                body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; padding: 20px; }
+                h1 { color: #2c3e50; }
+                p { font-size: 16px; color: #555; }
+                .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Hola, %s</h1>
+                <p>Te avisamos que la contraseña de tu cuenta fue actualizada correctamente.</p>
+                <p>Si vos no hiciste este cambio, por favor contactanos de inmediato para proteger tu cuenta.</p>
+                <div class="footer">
+                  <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(username);
+
+        sendEmail(to, "Tu contraseña fue actualizada", htmlContent);
+    }
+
+    // Correo de confirmación de compra
+    public void sendPurchaseConfirmationEmail(String to, String username, List<String> itemLines, double total,
+            String paymentMethod, Date purchaseDate) {
+        String itemsHtml = itemLines.stream()
+                .map(line -> "<li>" + line + "</li>")
+                .collect(Collectors.joining());
+        String formattedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(purchaseDate);
+
+        String htmlContent = """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+              <meta charset="UTF-8">
+              <title>Confirmación de compra</title>
+              <style>
+                body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; padding: 20px; }
+                h1 { color: #2c3e50; }
+                p { font-size: 16px; color: #555; }
+                ul { padding-left: 20px; color: #555; }
+                .total { font-size: 18px; font-weight: bold; color: #2c3e50; }
+                .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>¡Gracias por tu compra, %s!</h1>
+                <p>Confirmamos tu compra del %s, pagada con <strong>%s</strong>:</p>
+                <ul>%s</ul>
+                <p class="total">Total: $%,.0f</p>
+                <div class="footer">
+                  <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(username, formattedDate, paymentMethod, itemsHtml, total);
+
+        sendEmail(to, "Confirmación de compra", htmlContent);
     }
 }
