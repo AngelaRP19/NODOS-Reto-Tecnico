@@ -2,6 +2,8 @@ package com.nodo.retotecnico.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +20,15 @@ import com.nodo.retotecnico.repository.ContentsRepository;
  * fieldName/fieldType/required/options/displayOrder describen cómo pedirlo
  * y de qué tipo de dato es), para que el front arme el formulario leyendo
  * de la base de datos en vez de tenerlo hardcodeado.
+ *
+ * "title" y "options" no son texto literal: son claves de mensaje
+ * (content.register.firstName.title, etc.) que ContentsController resuelve
+ * vía MessageSource según el locale de cada request. Por eso, a diferencia
+ * de otros seeders, este hace upsert por (section, fieldName) en vez de
+ * saltarse todo si la sección ya tiene filas: si quedaron filas viejas de
+ * antes de este esquema de claves (con texto literal como title), nunca se
+ * hubieran corregido con un guard de "ya existe algo" y la traducción se
+ * habría quedado rota para siempre.
  */
 @Component
 @Order(2)
@@ -32,38 +43,53 @@ public class ContentsSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        boolean registerSeeded = !contentsRepository
-                .findBySectionAndDeletedFalseOrderByDisplayOrderAsc(SECTION_REGISTER)
-                .isEmpty();
+        List<Content> toSave = new ArrayList<>();
 
-        boolean loginSeeded = !contentsRepository
-                .findBySectionAndDeletedFalseOrderByDisplayOrderAsc(SECTION_LOGIN)
-                .isEmpty();
+        toSave.addAll(upsertSection(SECTION_REGISTER, List.of(
+                field(SECTION_REGISTER, "content.register.firstName.title", "firstName", "TEXT", true, "", 1),
+                field(SECTION_REGISTER, "content.register.lastName.title", "lastName", "TEXT", true, "", 2),
+                field(SECTION_REGISTER, "content.register.username.title", "username", "TEXT", true, "", 3),
+                field(SECTION_REGISTER, "content.register.email.title", "email", "EMAIL", true, "", 4),
+                field(SECTION_REGISTER, "content.register.country.title", "country", "SELECT", true,
+                        "content.register.country.options", 5),
+                field(SECTION_REGISTER, "content.register.password.title", "password", "PASSWORD", true, "", 6),
+                field(SECTION_REGISTER, "content.register.confirmPassword.title", "confirmPassword", "PASSWORD",
+                        true, "", 7))));
 
-        List<Content> fieldsToSave = new ArrayList<>();
+        toSave.addAll(upsertSection(SECTION_LOGIN, List.of(
+                field(SECTION_LOGIN, "content.login.username.title", "username", "TEXT", true, "", 1),
+                field(SECTION_LOGIN, "content.login.password.title", "password", "PASSWORD", true, "", 2))));
 
-        if (!registerSeeded) {
-            fieldsToSave.addAll(List.of(
-                    field(SECTION_REGISTER, "content.register.firstName.title", "firstName", "TEXT", true, "", 1),
-                    field(SECTION_REGISTER, "content.register.lastName.title", "lastName", "TEXT", true, "", 2),
-                    field(SECTION_REGISTER, "content.register.username.title", "username", "TEXT", true, "", 3),
-                    field(SECTION_REGISTER, "content.register.email.title", "email", "EMAIL", true, "", 4),
-                    field(SECTION_REGISTER, "content.register.country.title", "country", "SELECT", true,
-                            "content.register.country.options", 5),
-                    field(SECTION_REGISTER, "content.register.password.title", "password", "PASSWORD", true, "", 6),
-                    field(SECTION_REGISTER, "content.register.confirmPassword.title", "confirmPassword", "PASSWORD",
-                            true, "", 7)));
+        if (!toSave.isEmpty()) {
+            contentsRepository.saveAll(toSave);
         }
+    }
 
-        if (!loginSeeded) {
-            fieldsToSave.addAll(List.of(
-                    field(SECTION_LOGIN, "content.login.username.title", "username", "TEXT", true, "", 1),
-                    field(SECTION_LOGIN, "content.login.password.title", "password", "PASSWORD", true, "", 2)));
-        }
+    private List<Content> upsertSection(String section, List<Content> desiredFields) {
+        Map<String, Content> existingByFieldName = contentsRepository
+                .findBySectionAndDeletedFalseOrderByDisplayOrderAsc(section).stream()
+                .collect(Collectors.toMap(Content::getFieldName, c -> c, (a, b) -> a));
 
-        if (!fieldsToSave.isEmpty()) {
-            contentsRepository.saveAll(fieldsToSave);
+        List<Content> toSave = new ArrayList<>();
+        for (Content desired : desiredFields) {
+            Content existing = existingByFieldName.get(desired.getFieldName());
+            if (existing == null) {
+                toSave.add(desired);
+                continue;
+            }
+            if (!existing.getTitle().equals(desired.getTitle())
+                    || !existing.getOptions().equals(desired.getOptions())
+                    || !existing.getFieldType().equals(desired.getFieldType())
+                    || !existing.getDisplayOrder().equals(desired.getDisplayOrder())) {
+                existing.setTitle(desired.getTitle());
+                existing.setFieldType(desired.getFieldType());
+                existing.setRequired(desired.getRequired());
+                existing.setOptions(desired.getOptions());
+                existing.setDisplayOrder(desired.getDisplayOrder());
+                toSave.add(existing);
+            }
         }
+        return toSave;
     }
 
     private Content field(String section, String title, String fieldName, String fieldType,

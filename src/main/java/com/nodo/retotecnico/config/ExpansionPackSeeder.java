@@ -295,10 +295,18 @@ public class ExpansionPackSeeder implements CommandLineRunner {
         expansionPack.setPlatforms(platforms);
         expansionPack.setPrice(price);
         expansionPack.setCategory(category);
-        expansionPack.setPublicationDate("Recent Release");
+        expansionPack.setPublicationDate(publicationDateFor(language));
         expansionPack.setLanguage(language);
         expansionPack.setURLImage(urlImage);
         expansionPack.setCharacteristics(characteristics);
         return expansionPack;
+    }
+
+    private String publicationDateFor(String language) {
+        return switch (language) {
+            case "es" -> "Lanzamiento reciente";
+            case "fr" -> "Sortie récente";
+            default -> "Recent Release";
+        };
     }
 }

@@ -90,3 +90,4 @@ public class ContentsController {
                 localizedOptions,
                 content.getDisplayOrder());
     }
+}
