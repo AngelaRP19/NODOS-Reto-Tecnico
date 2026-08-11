@@ -94,7 +94,10 @@ public class LocalizedContentServiceImpl implements LocalizedContentService {
                 publicationDate,
                 locale.getLanguage(),
                 expansionPack.getURLImage(),
-                characteristics);
+                characteristics,
+                expansionPack.getScreenshots(),
+                expansionPack.getMinimumRequirements(),
+                expansionPack.getRecommendedRequirements());
     }
 
     @Override

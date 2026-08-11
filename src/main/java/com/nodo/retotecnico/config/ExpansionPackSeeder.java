@@ -2,6 +2,7 @@ package com.nodo.retotecnico.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -16,18 +17,40 @@ public class ExpansionPackSeeder implements CommandLineRunner {
     @Autowired
     private ExpansionPacksRepository expansionPacksRepository;
 
-    private static final List<String> MINIMUM_REQUIREMENTS = List.of(
-        "SO: Windows 10 · 64 bits",
-        "Procesador: Intel Core i3",
-        "Memoria: 4 GB RAM",
-        "Almacenamiento: 8 GB disponibles"
+    private static final Map<String, List<String>> MINIMUM_REQUIREMENTS = Map.of(
+        "es", List.of(
+            "SO: Windows 10 · 64 bits",
+            "Procesador: Intel Core i3",
+            "Memoria: 4 GB RAM",
+            "Almacenamiento: 8 GB disponibles"),
+        "en", List.of(
+            "OS: Windows 10 · 64-bit",
+            "Processor: Intel Core i3",
+            "Memory: 4 GB RAM",
+            "Storage: 8 GB available"),
+        "fr", List.of(
+            "SE : Windows 10 · 64 bits",
+            "Processeur : Intel Core i3",
+            "Mémoire : 4 Go de RAM",
+            "Stockage : 8 Go disponibles")
     );
 
-    private static final List<String> RECOMMENDED_REQUIREMENTS = List.of(
-        "SO: Windows 10/11 · 64 bits",
-        "Procesador: Intel Core i5",
-        "Memoria: 8 GB RAM",
-        "Almacenamiento: 8 GB disponibles"
+    private static final Map<String, List<String>> RECOMMENDED_REQUIREMENTS = Map.of(
+        "es", List.of(
+            "SO: Windows 10/11 · 64 bits",
+            "Procesador: Intel Core i5",
+            "Memoria: 8 GB RAM",
+            "Almacenamiento: 8 GB disponibles"),
+        "en", List.of(
+            "OS: Windows 10/11 · 64-bit",
+            "Processor: Intel Core i5",
+            "Memory: 8 GB RAM",
+            "Storage: 8 GB available"),
+        "fr", List.of(
+            "SE : Windows 10/11 · 64 bits",
+            "Processeur : Intel Core i5",
+            "Mémoire : 8 Go de RAM",
+            "Stockage : 8 Go disponibles")
     );
 
     @Override
@@ -314,8 +337,8 @@ public class ExpansionPackSeeder implements CommandLineRunner {
         expansionPack.setURLImage(urlImage);
         expansionPack.setCharacteristics(characteristics);
         expansionPack.setScreenshots(List.of(urlImage));
-        expansionPack.setMinimumRequirements(MINIMUM_REQUIREMENTS);
-        expansionPack.setRecommendedRequirements(RECOMMENDED_REQUIREMENTS);
+        expansionPack.setMinimumRequirements(MINIMUM_REQUIREMENTS.get(language));
+        expansionPack.setRecommendedRequirements(RECOMMENDED_REQUIREMENTS.get(language));
         return expansionPack;
     }
 
