@@ -6,9 +6,13 @@ import com.nodo.retotecnico.model.Challenge;
 
 public interface ChallengeService {
 
-    List<Challenge> getAllChallenges();
+    List<Challenge> getAllChallenges(String language);
+
     Challenge getChallengeById(Integer id);
+
     Integer createChallenge(Challenge challenge);
+
     Challenge updateChallenge(Integer id, Challenge challenge);
+
     void deleteChallenge(Integer id);
 }

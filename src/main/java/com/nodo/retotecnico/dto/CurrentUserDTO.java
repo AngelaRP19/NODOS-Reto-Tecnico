@@ -1,10 +1,10 @@
 package com.nodo.retotecnico.dto;
 
+import com.nodo.retotecnico.model.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.nodo.retotecnico.model.User;
 
 @Data
 @AllArgsConstructor

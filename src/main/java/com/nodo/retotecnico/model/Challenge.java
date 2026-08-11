@@ -38,5 +38,7 @@ public class Challenge {
 
     private String imageURL;
 
+    private String language;
+
     private Boolean deleted = false;
 }

@@ -16,8 +16,8 @@ public class ChallengeServiceImpl implements ChallengeService {
     private ChallengeRepository challengeRepository;
 
     @Override
-    public List<Challenge> getAllChallenges() {
-        return challengeRepository.findAll();
+    public List<Challenge> getAllChallenges(String language) {
+        return challengeRepository.findByLanguage(language);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.nodo.retotecnico.config;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,9 @@ public class SecurityConfig {
     @Value("${frontend.url}")
     private String frontendUrl;
 
+    @Value("${cors.allowed-origins:}")
+    private String corsAllowedOrigins;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -43,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(resolveAllowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -51,6 +55,21 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    // Admite varios orígenes separados por coma en CORS_ALLOWED_ORIGINS (útil en
+    // Render, donde puede haber front de staging y de producción); si no se define,
+    // cae en frontend.url (comportamiento previo, solo local). CORS no admite un
+    // origen con path final, así que se recorta la barra final de cada uno.
+    private List<String> resolveAllowedOrigins() {
+        String origins = (corsAllowedOrigins != null && !corsAllowedOrigins.isBlank())
+                ? corsAllowedOrigins
+                : frontendUrl;
+        return Arrays.stream(origins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
+                .toList();
     }
 
     @Bean
@@ -67,6 +86,9 @@ public class SecurityConfig {
 
                 // Endpoints públicos de autenticación
                 .requestMatchers("/auth/**", "/oauth2/**", "/login**", "/error**").permitAll()
+
+                // Health check público, usado por Render para verificar que el servicio está vivo
+                .requestMatchers("/actuator/health").permitAll()
 
                 // GET públicos - lectura de catálogos
                 .requestMatchers(HttpMethod.GET, "/nodos/contents/**", "/nodos/platform/**", "/nodos/expansionpacks/**", "/nodos/challenges/**").permitAll()
