@@ -18,5 +18,6 @@ public interface ExpansionPacksService {
 
     void deleteExpansionPack(Integer id);
     /*Devuelve las plataformas disponibles para una expansión.*/
-List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId);
+    List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId);
+    List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId, java.util.Locale locale);
 }

@@ -61,54 +61,54 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService {
         expansionPacksRepository.deleteById(id);
     }
 
+    @Autowired
+    private org.springframework.context.MessageSource messageSource;
+
     /* Construye la lista de plataformas disponibles para una expansión.*/
-@Override
-public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId) {
-
-    ExpansionPack expansion = expansionPacksRepository.findById(expansionId)
-            .orElseThrow(() -> new RuntimeException("Expansion Pack not found"));
-
-    List<PlatformSelectionDTO> result = new ArrayList<>();
-
-    if (expansion.getPlatforms() == null || expansion.getPlatforms().isBlank()) {
-        return result;
+    @Override
+    public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId) {
+        return getPlatformsByExpansion(expansionId, java.util.Locale.getDefault());
     }
 
-    List<String> platforms = Arrays.stream(expansion.getPlatforms().split("/"))
-            .map(String::trim)
-            .toList();
+    @Override
+    public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId, java.util.Locale locale) {
+        ExpansionPack expansion = expansionPacksRepository.findById(expansionId)
+                .orElseThrow(() -> new RuntimeException("Expansion Pack not found"));
 
-    for (String platform : platforms) {
+        List<PlatformSelectionDTO> result = new ArrayList<>();
 
-        String label;
-
-        switch (platform.toLowerCase()) {
-
-            case "steam":
-                label = "Continuar a la tienda de Steam";
-                break;
-
-            case "pc":
-            case "windows":
-                label = "Comprar para Windows";
-                break;
-
-            case "mac":
-                label = "Comprar para Mac";
-                break;
-
-            case "movil":
-            case "móvil":
-                label = "Comprar para Móvil";
-                break;
-
-            default:
-                label = "Comprar para " + platform;
+        if (expansion.getPlatforms() == null || expansion.getPlatforms().isBlank()) {
+            return result;
         }
 
-        result.add(new PlatformSelectionDTO(platform, label));
-    }
+        List<String> platforms = Arrays.stream(expansion.getPlatforms().split("/"))
+                .map(String::trim)
+                .toList();
 
-    return result;
-}
+        for (String platform : platforms) {
+            String label;
+            switch (platform.toLowerCase()) {
+                case "steam":
+                    label = messageSource.getMessage("platform.label.steam", null, "Continuar a la tienda de Steam", locale);
+                    break;
+                case "pc":
+                case "windows":
+                    label = messageSource.getMessage("platform.label.windows", null, "Comprar para Windows", locale);
+                    break;
+                case "mac":
+                    label = messageSource.getMessage("platform.label.mac", null, "Comprar para Mac", locale);
+                    break;
+                case "movil":
+                case "móvil":
+                case "mobile":
+                    label = messageSource.getMessage("platform.label.mobile", null, "Comprar para Móvil", locale);
+                    break;
+                default:
+                    label = messageSource.getMessage("platform.label.default", new Object[]{platform}, "Comprar para " + platform, locale);
+            }
+            result.add(new PlatformSelectionDTO(platform, label));
+        }
+
+        return result;
+    }
 }

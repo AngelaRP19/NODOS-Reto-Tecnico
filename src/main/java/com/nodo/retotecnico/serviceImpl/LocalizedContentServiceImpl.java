@@ -79,9 +79,27 @@ public class LocalizedContentServiceImpl implements LocalizedContentService {
         String publicationDate = translate(contentKey, locale, "publicationDate", expansionPack.getPublicationDate());
 
         List<String> characteristics = new ArrayList<>();
-        for (int i = 0; i < expansionPack.getCharacteristics().size(); i++) {
-            String defaultCharacteristic = expansionPack.getCharacteristics().get(i);
-            characteristics.add(translate(contentKey, locale, "characteristic." + (i + 1), defaultCharacteristic));
+        if (expansionPack.getCharacteristics() != null) {
+            for (int i = 0; i < expansionPack.getCharacteristics().size(); i++) {
+                String defaultCharacteristic = expansionPack.getCharacteristics().get(i);
+                characteristics.add(translate(contentKey, locale, "characteristic." + (i + 1), defaultCharacteristic));
+            }
+        }
+
+        List<String> minimumRequirements = new ArrayList<>();
+        if (expansionPack.getMinimumRequirements() != null) {
+            for (int i = 0; i < expansionPack.getMinimumRequirements().size(); i++) {
+                String defaultReq = expansionPack.getMinimumRequirements().get(i);
+                minimumRequirements.add(translate(contentKey, locale, "min_req." + (i + 1), defaultReq));
+            }
+        }
+
+        List<String> recommendedRequirements = new ArrayList<>();
+        if (expansionPack.getRecommendedRequirements() != null) {
+            for (int i = 0; i < expansionPack.getRecommendedRequirements().size(); i++) {
+                String defaultReq = expansionPack.getRecommendedRequirements().get(i);
+                recommendedRequirements.add(translate(contentKey, locale, "rec_req." + (i + 1), defaultReq));
+            }
         }
 
         return new ExpansionPackResponseDTO(
@@ -96,8 +114,8 @@ public class LocalizedContentServiceImpl implements LocalizedContentService {
                 expansionPack.getURLImage(),
                 characteristics,
                 expansionPack.getScreenshots(),
-                expansionPack.getMinimumRequirements(),
-                expansionPack.getRecommendedRequirements());
+                minimumRequirements,
+                recommendedRequirements);
     }
 
     @Override
