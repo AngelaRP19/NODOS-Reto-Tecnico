@@ -338,6 +338,40 @@ Relaciona un `User` con un `Challenge` (tabla `subscription_challenge`). Requier
 
 ---
 
+## ExpansionPackBetaTest (`/nodos/expansionpackbetatests`) — requiere estar autenticado (cualquier usuario)
+
+Historial de qué expansion packs en fase beta probó cada usuario (tabla `expansion_pack_beta_test`). Mismo patrón que `SubscriptionChallenge` (arriba), pero relacionando `User` con `ExpansionPack` en vez de `Challenge`.
+
+| Método | Ruta | Body | Respuesta |
+|---|---|---|---|
+| GET | `/nodos/expansionpackbetatests` | — | `200` + lista completa |
+| GET | `/nodos/expansionpackbetatests/{id}` | — | `200` + objeto |
+| POST | `/nodos/expansionpackbetatests/create` | `{"user":{"id":<userId>},"expansionPack":{"id":<expansionPackId>}}` | `200` + `id` numérico. `status` queda en `EN_PRUEBA` y `startDate` en la fecha actual, no se envían. |
+| PUT | `/nodos/expansionpackbetatests/{id}` | `{"status":"<ESTADO>","feedback":"..."}` (`user`/`expansionPack` no se pueden reasignar por esta vía) | `200` + objeto actualizado |
+| DELETE | `/nodos/expansionpackbetatests/{id}` | — | `200` + `"Expansion pack beta test deleted successfully"` |
+| GET | `/nodos/expansionpackbetatests/user/{userId}` | — | `200` + lista de pruebas beta de ese usuario (el que consume el tab "Beta testing" del perfil en el frontend) |
+
+`status` es un enum: `EN_PRUEBA`, `FINALIZADO`, `CANCELADO`.
+
+**Respuesta real** (`ExpansionPackBetaTestResponseDTO`, con el `ExpansionPack` anidado ya traducido según el `locale` del request, igual que `GET /nodos/expansionpacks`):
+```json
+{
+  "id": 1,
+  "userId": 5,
+  "expansionPack": { "id": 3, "name": "...", "URLImage": "...", "platforms": "...", "price": 79900.0, "...": "..." },
+  "status": "EN_PRUEBA",
+  "startDate": "2026-08-01",
+  "endDate": null,
+  "feedback": null
+}
+```
+
+> ⚠️ **`POST /nodos/expansionpackbetatests/create` exige `User.betaTester == true`.** Si el usuario indicado en el body no tiene `betaTester` activo (`PUT /auth/me/betatester` o al registrarse, ver sección Auth), la respuesta es **401** `"El usuario no está inscripto como beta tester."` — mismo mecanismo de `AccessDeniedException` → 401 ya documentado al inicio de esta guía (no un 403 de `SecurityConfig`, porque la validación depende del estado del usuario, no solo de la ruta/rol).
+>
+> Cuando `status` pasa a `FINALIZADO` o `CANCELADO` (y `endDate` todavía no estaba seteado), el backend lo completa automáticamente con la fecha actual. `PUT` solo modifica `status`/`feedback`/`endDate` — el `user`/`expansionPack` originales no se pueden cambiar por este endpoint.
+
+---
+
 ## Cart (`/nodos/cart`) — requiere estar autenticado (cualquier usuario)
 
 | Método | Ruta | Params/Body | Respuesta |

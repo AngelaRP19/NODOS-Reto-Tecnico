@@ -103,7 +103,7 @@ public class SecurityConfig {
                 // Cart, Buys y Subscription-Challenge requieren autenticación (USER o ADMIN)
                 // La restricción extra de ADMIN para pasar un reto a FINALIZADO/FALLIDO se resuelve en SubscriptionChallengeController,
                 // porque depende del contenido del body, no solo de la URL/método HTTP.
-                .requestMatchers("/nodos/cart/**", "/nodos/buys/**", "/nodos/subscriptionchallenges/**").authenticated()
+                .requestMatchers("/nodos/cart/**", "/nodos/buys/**", "/nodos/subscriptionchallenges/**", "/nodos/expansionpackbetatests/**").authenticated()
                 // Resto de operaciones requieren autenticación
                 .anyRequest().authenticated()
             )
