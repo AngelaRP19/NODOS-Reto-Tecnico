@@ -49,6 +49,7 @@ spring:
             user-name-attribute: id
 
 server:
+  address: 0.0.0.0
   port: ${PORT:${SERVER_PORT:8081}}
   forward-headers-strategy: framework
   tomcat:
@@ -81,3 +82,4 @@ frontend:
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+
