@@ -35,6 +35,40 @@ public class ExpansionPackSeeder implements CommandLineRunner {
             "Stockage : 8 Go disponibles")
     );
 
+    // Screenshots extra por pack, indexadas por su URLImage (portada), que es la
+    // misma URL para las 3 variantes de idioma de cada pack. Se suman a la
+    // portada para que cada pack tenga al menos 3 capturas en total. Asignadas
+    // por afinidad temática cuando existía un match razonable (Cottage Living
+    // con las capturas de "Cottage core", Horse Ranch con las de "Rancho de
+    // vacaciones", Get to Work con las de "College Live"); el resto de packs
+    // reutiliza esas mismas URLs, sin match temático, porque no hay más
+    // capturas disponibles.
+    private static final String COTTAGE_1 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786459818/02_qpmnri.jpg";
+    private static final String COTTAGE_2 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786459819/original-1_trg8vh.jpg";
+    private static final String COTTAGE_3 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786459819/ts4-ep11-official-screens-04-002-1080_afhdu9.webp";
+    private static final String COTTAGE_4 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786459819/ts4-ep11-preorder-screen-01-003_gfi7c3.webp";
+    private static final String COLLEGE_1 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460013/sFBbLMzFcZEFgbVPiUimFe-970-80.jpg_w44cc8.webp";
+    private static final String COLLEGE_2 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460014/SFg9QGeEfczCYE8MSwUYS3-970-80.jpg_ijovvc.webp";
+    private static final String COLLEGE_3 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460014/y8zkZdyrccrjj8BrL2Fhje-970-80.jpg_bxcsjl.webp";
+    private static final String RANCH_1 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460200/images_1_oldccw.jpg";
+    private static final String RANCH_2 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460201/Sims-4-Game-Packs-Ranked-Star-Wars-780x439_cra095.webp";
+    private static final String RANCH_3 = "https://res.cloudinary.com/w1jl4sa5/image/upload/v1786460201/MTS_Sortyero29-1564543-Activities_twwhd4.jpg";
+
+    private static final Map<String, List<String>> EXTRA_SCREENSHOTS = Map.of(
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784572920/TS4_Pack-Art_Enchanted-by-Nature_ES_iv5fev.avif",
+            List.of(RANCH_1, RANCH_2, RANCH_3),
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784574803/TS4_Pack-Art_Royalty-and-Legacy_ES_zggtwv.avif",
+            List.of(COLLEGE_1, COLLEGE_2, COLLEGE_3),
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784574889/TS4_Pack-Art_HorseRanch_ES_r2ddxj.avif",
+            List.of(RANCH_1, RANCH_2, RANCH_3),
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784574983/ES_Sims4-cottage-living-1x1-Loc_rp5yll.avif",
+            List.of(COTTAGE_1, COTTAGE_2, COTTAGE_3, COTTAGE_4),
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784575067/ES_Sims4-cats-and-dogs-1x1-Loc_rw592n.avif",
+            List.of(COTTAGE_1, COTTAGE_2, COTTAGE_3),
+        "https://res.cloudinary.com/w1jl4sa5/image/upload/v1784575123/ES_Sims4-get-to-work-1x1-Loc_saiuva.avif",
+            List.of(COLLEGE_1, COLLEGE_2, COLLEGE_3)
+    );
+
     private static final Map<String, List<String>> RECOMMENDED_REQUIREMENTS = Map.of(
         "es", List.of(
             "SO: Windows 10/11 · 64 bits",
@@ -336,7 +370,10 @@ public class ExpansionPackSeeder implements CommandLineRunner {
         expansionPack.setLanguage(language);
         expansionPack.setURLImage(urlImage);
         expansionPack.setCharacteristics(characteristics);
-        expansionPack.setScreenshots(List.of(urlImage));
+        List<String> screenshots = new ArrayList<>();
+        screenshots.add(urlImage);
+        screenshots.addAll(EXTRA_SCREENSHOTS.getOrDefault(urlImage, List.of()));
+        expansionPack.setScreenshots(screenshots);
         expansionPack.setMinimumRequirements(MINIMUM_REQUIREMENTS.get(language));
         expansionPack.setRecommendedRequirements(RECOMMENDED_REQUIREMENTS.get(language));
         return expansionPack;
