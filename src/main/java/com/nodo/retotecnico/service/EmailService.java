@@ -216,4 +216,44 @@ public class EmailService {
 
         sendEmail(to, "Confirmación de compra", htmlContent);
     }
+
+    // Correo de anuncio de nueva expansión para beta testers
+    public void sendExpansionAnnouncementEmail(String to, String username, String packName, String description,
+            String publicationDate, String platforms, List<String> minimumRequirements) {
+        String requirementsHtml = minimumRequirements == null ? "" : minimumRequirements.stream()
+                .map(line -> "<li>" + line + "</li>")
+                .collect(Collectors.joining());
+
+        String htmlContent = """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+              <meta charset="UTF-8">
+              <title>Nueva expansión para beta testing</title>
+              <style>
+                body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; padding: 20px; }
+                h1 { color: #2c3e50; }
+                p { font-size: 16px; color: #555; }
+                ul { padding-left: 20px; color: #555; }
+                .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>¡Hola, %s!</h1>
+                <p>Como beta tester, sos de los primeros en enterarte: llega <strong>%s</strong>, disponible a partir del <strong>%s</strong> para <strong>%s</strong>.</p>
+                <p>%s</p>
+                <p><strong>Requisitos mínimos:</strong></p>
+                <ul>%s</ul>
+                <div class="footer">
+                  <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """.formatted(username, packName, publicationDate, platforms, description, requirementsHtml);
+
+        sendEmail(to, "Nueva expansión para beta testers: " + packName, htmlContent);
+    }
 }

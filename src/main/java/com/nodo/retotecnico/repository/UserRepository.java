@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import com.nodo.retotecnico.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -12,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(String username);
     User findByEmail(String email);
     User findByUsernameIgnoreCase(String username);
+    List<User> findByBetaTesterTrue();
 }

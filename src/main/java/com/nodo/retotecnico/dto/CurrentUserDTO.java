@@ -1,5 +1,7 @@
 package com.nodo.retotecnico.dto;
 
+import java.time.Instant;
+
 import com.nodo.retotecnico.model.User;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ public class CurrentUserDTO {
     private String role;
     private Boolean betaTester;
     private Integer completedChallenges;
+    private Instant createdAt;
     private Boolean hasPassword;
     // Solo se completa cuando PUT /auth/me cambia el username y hace falta un JWT nuevo
     // (el token viejo queda con el username anterior como subject). Null en cualquier otro caso.
@@ -35,6 +38,7 @@ public class CurrentUserDTO {
             user.getRole(),
             user.getBetaTester(),
             user.getCompletedChallenges(),
+            user.getCreatedAt(),
             user.getPassword() != null && !user.getPassword().isEmpty(),
             null
         );
