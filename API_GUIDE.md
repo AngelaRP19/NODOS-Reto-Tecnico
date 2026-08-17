@@ -66,10 +66,13 @@ Uno de los cuatro endpoints de `/auth/**` que requieren estar autenticado (los o
   "role": "ROLE_USER",
   "betaTester": false,
   "completedChallenges": 0,
+  "createdAt": "2026-08-16T01:30:47.179009Z",
   "hasPassword": true,
   "token": null
 }
 ```
+
+`createdAt` es de solo lectura (ningún endpoint lo acepta en el body): `Instant` seteado automáticamente por Hibernate (`@CreationTimestamp`) al insertar el usuario, serializado como ISO-8601 con `Z`. Es parte del shape de `CurrentUserDTO` en todas las respuestas, igual que `token`. Verificado en vivo con un usuario registrado después de este cambio; **los usuarios que ya existían antes de agregar la columna quedan con `createdAt: null`** (se agregó la columna sin backfill, no hay forma de reconstruir la fecha real de esas cuentas).
 
 `hasPassword` indica si el usuario tiene una contraseña propia guardada (`true` para cuentas registradas con `/auth/register`) o no (`false` para cuentas creadas solo por OAuth2/Google/Meta, donde `User.password` queda como `""`). Sirve para que el frontend sepa con certeza si debe mostrar "agregar contraseña" o "cambiar contraseña" en el perfil, sin depender de si la sesión actual entró por password o por OAuth2 (una misma cuenta puede haber usado ambos alguna vez).
 
@@ -118,6 +121,7 @@ Permite que **cualquier usuario autenticado** active o cancele su propia inscrip
   "role": "ROLE_USER",
   "betaTester": true,
   "completedChallenges": 0,
+  "createdAt": "2026-07-01T09:12:03.884211Z",
   "hasPassword": true,
   "token": null
 }
@@ -213,6 +217,7 @@ Público: `GET`. Requiere rol `ADMIN`: `POST`, `PUT`, `DELETE`.
 | GET | `/nodos/expansionpacks/{id}` | — | `200` + pack |
 | GET | `/nodos/expansionpacks/{id}/platforms` | — | `200` + lista de plataformas disponibles (ver abajo) |
 | POST | `/nodos/expansionpacks/create` | ver campos abajo | `200` + `id` numérico |
+| POST | `/nodos/expansionpacks/notify-beta-testers` | mismo shape que `create` (ver abajo) | `200` + `{"sent": <cantidad>}` |
 | PUT | `/nodos/expansionpacks/{id}` | ver campos abajo | `200` + pack actualizado |
 | DELETE | `/nodos/expansionpacks/{id}` | — | `200` + `"Expansion Pack deleted successfully"` |
 
@@ -270,6 +275,36 @@ Deriva la lista de plataformas disponibles a partir del campo `platforms` del pa
   {"name": "Consolas", "label": "Comprar para Consolas"}
 ]
 ```
+
+### `POST /nodos/expansionpacks/notify-beta-testers` (nuevo, ADMIN-only)
+
+Dispara un correo (Resend) anunciando una nueva expansión a **todos** los usuarios con `betaTester: true` — pensado para el panel de administrador, para avisar por correo antes de publicar el pack en el catálogo. **No persiste nada**: no crea un `ExpansionPack` ni lo hace comprable, es puramente una notificación puntual. Por eso es una ruta separada de `POST /create` aunque el body sea igual, y por eso está protegida por la misma regla de `SecurityConfig` que el resto de `POST /nodos/expansionpacks/**` (rol `ADMIN`) sin que haga falta ningún cambio ahí.
+
+**Body**: exactamente el mismo shape que `POST /nodos/expansionpacks/create` (de hecho el controller recibe una entidad `ExpansionPack` igual que `create` — cualquier campo que no sea `name`, `description`, `publicationDate`, `platforms` o `minimumRequirements` se ignora, no hace falta mandarlo):
+```json
+{
+  "name": "Vida Urbana",
+  "publicationDate": "2026-09-15",
+  "description": "Una nueva forma de vivir la ciudad.",
+  "platforms": "Windows / Steam",
+  "minimumRequirements": [
+    "SO: Windows 11 · 64 bits",
+    "Procesador: Intel Core i5",
+    "Memoria: 8 GB RAM",
+    "Almacenamiento: 8 GB disponibles (SSD)"
+  ]
+}
+```
+
+**Respuesta real** (verificada en vivo, sin beta testers cargados en ese momento):
+```json
+{"sent": 0}
+```
+`sent` es la cantidad de usuarios con `betaTester: true` a los que se les intentó mandar el correo (`userRepository.findByBetaTesterTrue().size()`), no la cantidad de correos que Resend efectivamente entregó — no hay forma de saber eso desde acá, igual que el resto de correos de esta API.
+
+> ✉️ El correo se arma con los mismos datos del body (`name`, `description`, `publicationDate`, `platforms`, `minimumRequirements`) y se manda uno por cada beta tester, uno a la vez. Si Resend falla para alguno (o para todos — ej. `RESEND_API_KEY` sin configurar), esa falla se loguea (`e.printStackTrace()`) pero **no** afecta la respuesta `200` ni corta el loop — el resto de los beta testers igual reciben su correo. Mismo patrón que `PUT /auth/me/betatester` y el resto de correos transaccionales de esta API. El envío en sí (con beta testers reales cargados) se validó por lectura de código, no en vivo — disparar un correo real de prueba hubiera consumido la cuenta de Resend configurada en este entorno para nada.
+>
+> Verificado en vivo: `403` para un usuario autenticado sin rol `ADMIN`; `302` (no 401) sin token, igual que el resto de la API — ver la nota general sobre "sin token en un endpoint protegido" al inicio de esta guía.
 
 ---
 
@@ -444,11 +479,13 @@ Historial de qué expansion packs en fase beta probó cada usuario (tabla `expan
 | PUT | `/nodos/users/{id}/betatester` | `true`/`false` (boolean JSON plano) | `200` + usuario con `betaTester` actualizado (ADMIN-only — para que el propio usuario cambie el suyo, ver `PUT /auth/me/betatester` en la sección Auth) |
 | GET | `/nodos/users/{id}/completedchallenges` | — | `200` + entero (cantidad de retos con `status: FINALIZADO`) |
 
-**Campos nuevos en la entidad `User`**: `betaTester` (boolean, default `false`) y `completedChallenges` (entero, default `0`, se incrementa automáticamente desde `subscription_challenge` — ver esa sección).
+**Campos nuevos en la entidad `User`**: `betaTester` (boolean, default `false`), `completedChallenges` (entero, default `0`, se incrementa automáticamente desde `subscription_challenge` — ver esa sección) y `createdAt` (`Instant` ISO-8601, ver nota abajo).
 
 > ✅ **Corregido en esta sesión**: `GET /nodos/users` (y `GET /nodos/users/{id}`) ya **no** devuelven el campo `"password"` — se agregó `@JsonIgnore` sobre el getter en `User.java`. Sigue devolviendo el resto de campos internos de `UserDetails` (`enabled`, `authorities`, `accountNonExpired`, etc.) sin filtrar, que no son sensibles pero son ruido para el frontend.
 >
-> ⚠️ **`PUT /nodos/users/{id}` solo actualiza `name` y `email`.** `firstName`, `lastName`, `country`, `username`, `role`, `betaTester`, `completedChallenges` se ignoran silenciosamente aunque los mandes en el body — usar los endpoints dedicados (`/role`, `/betatester`) para esos campos. `DELETE` funciona correctamente.
+> ⚠️ **`PUT /nodos/users/{id}` solo actualiza `name` y `email`.** `firstName`, `lastName`, `country`, `username`, `role`, `betaTester`, `completedChallenges`, `createdAt` se ignoran silenciosamente aunque los mandes en el body — usar los endpoints dedicados (`/role`, `/betatester`) para esos campos. `DELETE` funciona correctamente.
+>
+> 📅 **`createdAt`** (nuevo en esta sesión): fecha de registro, seteada automáticamente por Hibernate (`@CreationTimestamp`) al insertar el usuario — de solo lectura, ningún endpoint la acepta en el body (ni siquiera `POST /nodos/users/create`, que persiste una entidad `User` completa: si el body trae `createdAt`, Hibernate lo ignora y genera el suyo propio al insertar). Se expone igual en `GET /nodos/users`, `GET /nodos/users/{id}` y en `CurrentUserDTO` (`GET /auth/me` y afines, ver sección Auth). Verificado en vivo: un usuario creado después de agregar este campo devuelve, por ejemplo, `"createdAt": "2026-08-16T01:30:47.179009Z"`; los usuarios que ya existían en la base **antes** de este cambio devuelven `"createdAt": null` (la columna se agregó sin backfill).
 
 ---
 

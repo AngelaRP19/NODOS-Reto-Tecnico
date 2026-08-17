@@ -2,6 +2,7 @@ package com.nodo.retotecnico.controller;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,5 +69,12 @@ public class ExpansionPacksController {
                 "Expansion pack deleted successfully"));
     }
 
+    // No persiste ningún pack: solo dispara el correo de anuncio a los usuarios beta tester.
+    // Body con el mismo shape que POST /create (se ignoran los campos que no se usan en el correo).
+    @PostMapping("/notify-beta-testers")
+    public ResponseEntity<Map<String, Integer>> notifyBetaTesters(@RequestBody ExpansionPack expansionPack) {
+        Integer sent = expansionPacksService.notifyBetaTesters(expansionPack);
+        return ResponseEntity.ok(Map.of("sent", sent));
+    }
 
 }
