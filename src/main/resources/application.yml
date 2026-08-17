@@ -70,7 +70,7 @@ jwt:
 resend:
   token: ${RESEND_API_KEY:dummy_key_for_tests}
   email:
-    from: tu-correo@dominio.com
+    from: onboarding@resend.dev
     to: destino@dominio.com
 
 crypto:
