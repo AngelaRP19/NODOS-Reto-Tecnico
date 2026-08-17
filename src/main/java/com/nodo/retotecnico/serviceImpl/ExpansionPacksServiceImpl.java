@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nodo.retotecnico.model.ExpansionPack;
+import com.nodo.retotecnico.model.User;
 import com.nodo.retotecnico.repository.ExpansionPacksRepository;
+import com.nodo.retotecnico.repository.UserRepository;
+import com.nodo.retotecnico.service.EmailService;
 import com.nodo.retotecnico.service.ExpansionPacksService;
 
 import java.util.ArrayList;
@@ -19,6 +22,12 @@ public class ExpansionPacksServiceImpl implements ExpansionPacksService {
 
     @Autowired
     private ExpansionPacksRepository expansionPacksRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public List<ExpansionPack> getAllExpansionPacks(String language) {
@@ -111,4 +120,20 @@ public List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId) {
 
     return result;
 }
+
+    @Override
+    public Integer notifyBetaTesters(ExpansionPack expansionPack) {
+        List<User> betaTesters = userRepository.findByBetaTesterTrue();
+        for (User betaTester : betaTesters) {
+            try {
+                emailService.sendExpansionAnnouncementEmail(betaTester.getEmail(), betaTester.getUsername(),
+                        expansionPack.getName(), expansionPack.getDescription(), expansionPack.getPublicationDate(),
+                        expansionPack.getPlatforms(), expansionPack.getMinimumRequirements());
+            } catch (Exception e) {
+                // Un fallo del proveedor de email (ej. Resend sin configurar) no debe afectar la respuesta 200.
+                e.printStackTrace();
+            }
+        }
+        return betaTesters.size();
+    }
 }

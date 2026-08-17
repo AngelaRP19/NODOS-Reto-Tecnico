@@ -19,4 +19,7 @@ public interface ExpansionPacksService {
     void deleteExpansionPack(Integer id);
     /*Devuelve las plataformas disponibles para una expansión.*/
 List<PlatformSelectionDTO> getPlatformsByExpansion(Integer expansionId);
+
+    /*Notifica por correo a todos los usuarios beta tester sobre una nueva expansión, sin persistirla.*/
+    Integer notifyBetaTesters(ExpansionPack expansionPack);
 }

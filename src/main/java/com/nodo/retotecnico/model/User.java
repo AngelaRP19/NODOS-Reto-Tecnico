@@ -1,9 +1,11 @@
 package com.nodo.retotecnico.model;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,6 +51,10 @@ public class User implements UserDetails {
     private Boolean deleted = false;
     private Boolean betaTester = false;
     private Integer completedChallenges = 0;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Instant createdAt;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
