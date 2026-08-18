@@ -119,7 +119,7 @@ public class EmailService {
             <html lang="es">
             <head>
               <meta charset="UTF-8">
-              <title>¡Ya sos beta tester!</title>
+              <title>¡Ya eres beta tester!</title>
               <style>
                 body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; padding: 20px; }
@@ -131,8 +131,9 @@ public class EmailService {
             <body>
               <div class="container">
                 <h1>¡Gracias por sumarte, %s!</h1>
-                <p>Quedaste inscripto como <strong>beta tester</strong> de la comunidad de Los Sims 4 🧪.</p>
-                <p>Vas a tener acceso anticipado a nuevas funciones antes que el resto. ¡Gracias por ayudarnos a mejorar!</p>
+                <p>Quedaste inscrito como <strong>beta tester</strong> de la comunidad de Los Sims 4 🧪.</p>
+                <p>Vas a tener acceso anticipado a nuevas funciones. Te enviaremos correos con los nuevos paquetes de  expansión antes de que sean publicados para que los pruebes.
+                ¡Gracias por ayudarnos a mejorar!</p>
                 <div class="footer">
                   <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
                 </div>
@@ -141,7 +142,7 @@ public class EmailService {
             </html>
             """.formatted(username);
 
-        sendEmail(to, "¡Ya sos beta tester!", htmlContent);
+        sendEmail(to, "¡Ya eres beta tester!", htmlContent);
     }
 
     // Correo de aviso de cambio de contraseña
@@ -164,7 +165,7 @@ public class EmailService {
               <div class="container">
                 <h1>Hola, %s</h1>
                 <p>Te avisamos que la contraseña de tu cuenta fue actualizada correctamente.</p>
-                <p>Si vos no hiciste este cambio, por favor contactanos de inmediato para proteger tu cuenta.</p>
+                <p>Si tú no hiciste este cambio, por favor contactanos de inmediato para proteger tu cuenta.</p>
                 <div class="footer">
                   <p>© 2026 Los Sims 4. Todos los derechos reservados.</p>
                 </div>
@@ -242,7 +243,7 @@ public class EmailService {
             <body>
               <div class="container">
                 <h1>¡Hola, %s!</h1>
-                <p>Como beta tester, sos de los primeros en enterarte: llega <strong>%s</strong>, disponible a partir del <strong>%s</strong> para <strong>%s</strong>.</p>
+                <p>Como beta tester, eres de los primeros en enterarte: llega <strong>%s</strong>, disponible a partir del <strong>%s</strong> para <strong>%s</strong>.</p>
                 <p>%s</p>
                 <p><strong>Requisitos mínimos:</strong></p>
                 <ul>%s</ul>
