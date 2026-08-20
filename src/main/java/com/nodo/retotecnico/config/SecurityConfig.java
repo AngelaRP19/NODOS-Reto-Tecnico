@@ -3,6 +3,7 @@ package com.nodo.retotecnico.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.nodo.retotecnico.security.JwtFilter;
+import com.nodo.retotecnico.security.OAuth2AuthenticationSuccessHandler;
+
 
 @Configuration
 public class SecurityConfig {
@@ -33,6 +36,10 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
 
     @Bean
     public JwtFilter jwtFilter() {
@@ -109,7 +116,7 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(oauth2 -> oauth2
-                .defaultSuccessUrl(frontendUrl, true)
+                .successHandler(oAuth2AuthenticationSuccessHandler)
             );
         return http.build();
     }
