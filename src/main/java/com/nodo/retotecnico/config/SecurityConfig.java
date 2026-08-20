@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,6 +39,7 @@ public class SecurityConfig {
     }
 
     @Autowired
+    @Lazy
     private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
 
