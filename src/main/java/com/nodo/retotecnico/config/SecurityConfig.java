@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.nodo.retotecnico.security.CookieOAuth2AuthorizationRequestRepository;
 import com.nodo.retotecnico.security.JwtFilter;
 import com.nodo.retotecnico.security.OAuth2AuthenticationSuccessHandler;
 
@@ -42,7 +43,10 @@ public class SecurityConfig {
     @Lazy
     private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
+    @Autowired
+    private CookieOAuth2AuthorizationRequestRepository cookieOAuth2AuthorizationRequestRepository;
 
+    
     @Bean
     public JwtFilter jwtFilter() {
         return new JwtFilter();
@@ -118,6 +122,8 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(endpoint -> endpoint
+                    .authorizationRequestRepository(cookieOAuth2AuthorizationRequestRepository))
                 .successHandler(oAuth2AuthenticationSuccessHandler)
             );
         return http.build();
