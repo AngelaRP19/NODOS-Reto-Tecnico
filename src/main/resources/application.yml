@@ -67,11 +67,14 @@ management:
 jwt:
   secret: ${JWT_SECRET:default_secret_key_please_change}
 
+backend:
+  url: ${BACKEND_URL:http://localhost:8081/auth
+
 resend:
   token: ${RESEND_API_KEY:dummy_key_for_tests}
   email:
-    from: onboarding@resend.dev
-    to: destino@dominio.com
+    from: ${RESEND_EMAIL_FROM:onboarding@resend.dev}
+    to: ${RESEND_EMAIL_TO:destino@dominio.com}
 
 crypto:
   secret-key: ${CRYPTO_SECRET_KEY:ILluF20Aavb5J6XZ/qw67TSAQxkCPoi3IWQs1fI2sYA=}
